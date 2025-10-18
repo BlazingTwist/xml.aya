@@ -1,0 +1,101 @@
+.{
+    XML minification seems simple on paper. "Just remove the useless whitespace".
+    However, none of these implementations do it "correctly" (.
+    - this one removes whitespaces in cdata content:
+      https://www.minifier.org/xml-minifier
+    - these do not remove whitespace in start-tags and around entity-references:
+      https://onlinexmltools.com/minify-xml
+      https://jsonformatter.org/xml-minify
+      https://codebeautify.org/xml-minifier
+    - this does not support "special" tags at all (processing instruction, cdata, entity-references)
+      notepad++ 'XML Tools' > 'Linearize'
+.}
+import xml
+
+"<?xml   version  =  "1.0"   encoding="UTF-8" standalone="no"?>
+   <?processing?>
+   <!DOCTYPE note SYSTEM "Note.dtd">
+   <!-- comment -->
+   <root   xmlns:ns = "nsUrl"  ><meta>
+ 		<!--    comment    -->
+ 		<![CDATA[  any<!--character-->data  ]]>
+ 		<?processing?>
+ 		<?processing instruction?>
+ 		&lt;
+ 	</meta>
+ 	<attrNode att="test"/>
+ 	<ns:nsNode ns:att2="test2" att3="test3">
+ 		<foo>1</foo>
+ 		<bar></bar>
+ 	</ns:nsNode>
+ 	<ns:nsNode ns:att2="test2" att3="test3">
+ 		<foo>2</foo>
+ 		<bar/>
+ 	</ns:nsNode>
+ </root>  ":maxified;
+
+[
+    "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"
+    "<?processing?>"
+    "<!DOCTYPE note SYSTEM \"Note.dtd\">"
+    "<!-- comment -->"
+    "<root xmlns:ns=\"nsUrl\">"
+    "<meta>"
+    "<!--    comment    -->"
+    "<![CDATA[  any<!--character-->data  ]]>"
+    "<?processing?>"
+    "<?processing instruction?>"
+    "&lt;"
+    "</meta>"
+    "<attrNode att=\"test\"/>"
+    "<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+    "<foo>1</foo>"
+    "<bar/>"
+    "</ns:nsNode>"
+    "<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+    "<foo>long
+		multiline
+		text</foo>"
+    "<bar/>"
+    "</ns:nsNode>"
+    "</root>"
+] "" % :minified;
+
+[
+    "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"
+    "<?processing?>"
+    "<!DOCTYPE note SYSTEM \"Note.dtd\">"
+    "<!-- comment -->"
+    "<root xmlns:ns=\"nsUrl\">"
+    "	<meta>"
+    "		<!--    comment    -->"
+    "		<![CDATA[  any<!--character-->data  ]]>"
+    "		<?processing?>"
+    "		<?processing instruction?>"
+    "		&lt;"
+    "	</meta>"
+    "	<attrNode att=\"test\"></attrNode>"
+    "	<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+    "		<foo>1</foo>"
+    "		<bar></bar>"
+    "	</ns:nsNode>"
+    "	<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+    "		<foo>"
+    "			long"
+    "			multiline"
+    "			text"
+    "		</foo>"
+    "		<bar></bar>"
+    "	</ns:nsNode>"
+    "</root>"
+] "\n" % :prettified;
+
+"test minifying 'maxified' xml.." :P
+(maxified xml.loads .minify) (minified) :!
+"test minifying 'prettified' xml.." :P
+(prettified xml.loads .minify) (minified) :!
+
+"test prettifying 'maxified' xml.." :P
+(maxified xml.loads .prettify) (prettified) :!
+"test prettifying 'minified' xml.." :P
+(minified xml.loads .prettify) (prettified) :!

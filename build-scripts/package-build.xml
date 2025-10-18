@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="Package xml.aya" basedir="." default="package">
+    <dirname property="scripts.dir" file="${ant.file.Package xml.aya}"/>
+    <property name="root.dir" location="${scripts.dir}/.."/>
+
+    <!-- verify that all parameters were passed -->
+    <fail unless="build-dir"/>
+    <fail unless="fat.jar"/>
+    <fail unless="version"/>
+
+    <!-- re-define the parameters, so that they can be used with autocompletion -->
+    <property name="build-dir" value="ALREADY_DEFINED"/>
+    <property name="fat.jar" value="ALREADY_DEFINED"/>
+    <property name="version" value="ALREADY_DEFINED"/>
+
+    <target name="package">
+        <basename property="fat.jar.name" file="${fat.jar}"/>
+        <property name="init.aya" location="${build-dir}/init.aya"/>
+        <property name="package.json" location="${build-dir}/package.json"/>
+        
+        <copy file="${fat.jar}" todir="${build-dir}"/>
+        
+        <copy file="${scripts.dir}/init.template.aya" tofile="${init.aya}"/>
+        <replace file="${init.aya}" token="[AYA-XML-JAR]" value="${fat.jar.name}" failonnoreplacements="true"/>
+
+        <copy file="${scripts.dir}/package.template.json" tofile="${package.json}"/>
+        <replace file="${package.json}" token="[VERSION]" value="${version}" failonnoreplacements="true"/>
+
+        <zip destfile="${build-dir}/${fat.jar.name}.zip">
+            <union>
+                <file file="${init.aya}"/>
+                <file file="${fat.jar}"/>
+                <file file="${package.json}"/>
+                <fileset dir="${root.dir}">
+                    <include name="README.md"/>
+                </fileset>
+                <mappedresources>
+                    <fileset dir="${root.dir}/src/main/aya">
+                        <include name="**/*"/>
+                    </fileset>
+                    <globmapper from="*" to="src/*"/>
+                </mappedresources>
+                <mappedresources>
+                    <fileset dir="${root.dir}/src/test/aya">
+                        <include name="**/*"/>
+                    </fileset>
+                    <globmapper from="*" to="test/*"/>
+                </mappedresources>
+            </union>
+        </zip>
+    </target>
+</project>
