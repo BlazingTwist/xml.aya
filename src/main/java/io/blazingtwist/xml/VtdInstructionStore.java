@@ -32,6 +32,7 @@ import io.blazingtwist.xml.instructions.vtd.VtdNavToNextSibling;
 import io.blazingtwist.xml.instructions.vtd.VtdNavToParent;
 import io.blazingtwist.xml.instructions.vtd.VtdNavToPrevSibling;
 import io.blazingtwist.xml.instructions.vtd.VtdNavToRoot;
+import io.blazingtwist.xml.instructions.vtd.VtdNavToToken;
 import io.blazingtwist.xml.instructions.vtd.VtdTokenRemove;
 import io.blazingtwist.xml.instructions.vtd.VtdTokenReplace;
 import io.blazingtwist.xml.instructions.vtd.VtdTokenToNormalizedString;
@@ -84,6 +85,7 @@ public class VtdInstructionStore implements NamedInstructionStore {
 				new VtdNavToParent(),
 				new VtdNavToPrevSibling(),
 				new VtdNavToRoot(),
+				new VtdNavToToken(),
 				new VtdTokenRemove(),
 				new VtdTokenReplace(),
 				new VtdTokenToNormalizedString(),

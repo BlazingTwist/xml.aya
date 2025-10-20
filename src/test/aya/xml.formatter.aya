@@ -30,9 +30,9 @@ require xml {xml}
     " 		<bar></bar>"
     " 	</ns:nsNode>"
     " 	<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
-    " 		<foo>long"
+    " 		<foo>  long"
     "       multiline"
-    "       text</foo>"
+    "       text  </foo>"
     " 		<bar/>"
     " 	</ns:nsNode>"
     " </root>  "
@@ -71,6 +71,65 @@ require xml {xml}
     "<!DOCTYPE note SYSTEM \"Note.dtd\">"
     "<!-- comment -->"
     "<root xmlns:ns=\"nsUrl\">"
+    "<meta>"
+    "<!--    comment    -->"
+    "<![CDATA[  any<!--character-->data  ]]>"
+    "<?processing?>"
+    "<?processing instruction?>"
+    "&lt;"
+    "</meta>"
+    "<attrNode att=\"test\"/>"
+    [
+        "<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+        " 		<foo>1</foo>"
+        " 		<bar></bar>"
+        " 	</ns:nsNode>"
+    ] "\n" %
+    [
+        "<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+        " 		<foo>  long"
+        "       multiline"
+        "       text  </foo>"
+        " 		<bar/>"
+        " 	</ns:nsNode>"
+    ] "\n" %
+    "</root>"
+] "" % :minified_partial_ns_node;
+
+[
+    "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"
+    "<?processing?>"
+    "<!DOCTYPE note SYSTEM \"Note.dtd\">"
+    "<!-- comment -->"
+    [
+        "<root xmlns:ns=\"nsUrl\"><meta>"
+        " 		<!--    comment    -->"
+        " 		<![CDATA[  any<!--character-->data  ]]>"
+        " 		<?processing?>"
+        " 		<?processing instruction?>"
+        " 		&lt;"
+        " 	</meta>"
+        " 	<attrNode att=\"test\"/>"
+        " 	<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+        " 		<foo>1</foo>"
+        " 		<bar></bar>"
+        " 	</ns:nsNode>"
+        " 	<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+        " 		<foo>  long"
+        "       multiline"
+        "       text  </foo>"
+        " 		<bar/>"
+        " 	</ns:nsNode>"
+        " </root>"
+    ] "\n" %
+] "" % :minified_partial_root;
+
+[
+    "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"
+    "<?processing?>"
+    "<!DOCTYPE note SYSTEM \"Note.dtd\">"
+    "<!-- comment -->"
+    "<root xmlns:ns=\"nsUrl\">"
     "	<meta>"
     "		<!--    comment    -->"
     "		<![CDATA[  any<!--character-->data  ]]>"
@@ -94,10 +153,106 @@ require xml {xml}
     "</root>"
 ] "\n" % :prettified;
 
+[
+    "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"
+    "<?processing?>"
+    "<!DOCTYPE note SYSTEM \"Note.dtd\">"
+    "<!-- comment -->"
+    "<root xmlns:ns=\"nsUrl\">"
+    "	<meta>"
+    "		<!--    comment    -->"
+    "		<![CDATA[  any<!--character-->data  ]]>"
+    "		<?processing?>"
+    "		<?processing instruction?>"
+    "		&lt;"
+    "	</meta>"
+    "	<attrNode att=\"test\"></attrNode>"
+    [
+        "	<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+        " 		<foo>1</foo>"
+        " 		<bar></bar>"
+        " 	</ns:nsNode>"
+    ] "\n" %
+    [
+        "	<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+        " 		<foo>  long"
+        "       multiline"
+        "       text  </foo>"
+        " 		<bar/>"
+        " 	</ns:nsNode>"
+    ] "\n" %
+    "</root>"
+] "\n" % :prettified_partial_ns_node;
+
+[
+    "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"
+    "<?processing?>"
+    "<!DOCTYPE note SYSTEM \"Note.dtd\">"
+    "<!-- comment -->"
+    [
+        "<root xmlns:ns=\"nsUrl\"><meta>"
+        " 		<!--    comment    -->"
+        " 		<![CDATA[  any<!--character-->data  ]]>"
+        " 		<?processing?>"
+        " 		<?processing instruction?>"
+        " 		&lt;"
+        " 	</meta>"
+        " 	<attrNode att=\"test\"/>"
+        " 	<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+        " 		<foo>1</foo>"
+        " 		<bar></bar>"
+        " 	</ns:nsNode>"
+        " 	<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+        " 		<foo>  long"
+        "       multiline"
+        "       text  </foo>"
+        " 		<bar/>"
+        " 	</ns:nsNode>"
+        " </root>"
+    ] "\n" %
+] "\n" % :prettified_partial_root;
+
+[
+    "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"
+    "<?processing?>"
+    "<!DOCTYPE note SYSTEM \"Note.dtd\">"
+    "<!-- comment -->"
+    "<root xmlns:ns=\"nsUrl\">"
+    "	<meta>"
+    "		<!--    comment    -->"
+    "		<![CDATA[  any<!--character-->data  ]]>"
+    "		<?processing?>"
+    "		<?processing instruction?>"
+    "		&lt;"
+    "	</meta>"
+    "	<attrNode att=\"test\"></attrNode>"
+    "	<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+    "		<foo>1</foo>"
+    "		<bar></bar>"
+    "	</ns:nsNode>"
+    "	<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+    "		<foo>long"
+    "       multiline"
+    "       text</foo>"
+    "		<bar></bar>"
+    "	</ns:nsNode>"
+    "</root>"
+] "\n" % :prettified_keep_multiline;
+
 "test minifying 'maxified' xml.." :P
 (maxified 1 xml.loads []\ .minify) (minified) :!
+"test minifying 'maxified' xml excluding 'nsNode'.." :P
+(maxified 1 xml.loads ["nsNode"]\ .minify) (minified_partial_ns_node) :!
+"test minifying 'maxified' xml excluding 'root'.." :P
+(maxified 1 xml.loads ["root"]\ .minify) (minified_partial_root) :!
 
 "test prettifying 'maxified' xml.." :P
-(maxified 1 xml.loads []\ .prettify) (prettified) :!
+(maxified 1 xml.loads 1\ []\ .prettify) (prettified) :!
 "test prettifying 'minified' xml.." :P
-(minified 1 xml.loads []\ .prettify) (prettified) :!
+(minified 1 xml.loads 1\ []\ .prettify) (prettified) :!
+"test prettifying 'maxified' xml excluding 'nsNode'.." :P
+(maxified 1 xml.loads 1\ ["nsNode"]\ .prettify) (prettified_partial_ns_node) :!
+"test prettifying 'maxified' xml excluding 'root'.." :P
+(maxified 1 xml.loads 1\ ["root"]\ .prettify) (prettified_partial_root) :!
+"test prettifying 'maxified' xml preserving multiline text.." :P
+(minified 1 xml.loads 0\ []\ .prettify) (prettified_keep_multiline) :!

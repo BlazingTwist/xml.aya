@@ -15,23 +15,71 @@ def xml::__init__ {xml_id::num self,
 }
 
 .{?
+	Same as xml::minify, but with a special 'exclude_elements' preset for XHTML files: ["pre", "textarea", "script", "style"]
+	Do note that this may still break documents that are making use of the CSS 'white-space' property.
+.}
+def xml::minify_xhtml {self,
+	["pre", "textarea", "script", "style"] self.minify
+}
+
+.{?
     Remove all non-significant whitespace from the xml document.
-    - exclude_elements::list<str> : list of element names that won't be traversed when minifying.
+    - exclude_elements::list<str> : list of element names whose content won't be modified.
     Returns the minified document as a string.
 .}
-def xml::minify {exclude_elements::list self : unclosed_tags xml_declaration_open xml_tag_open stack^,
+def xml::minify {exclude_elements::list self : unclosed_tokens xml_declaration_open xml_tag_open emit_close_tags emit_fragment is_in_excluded_tag push_token stack^,
     0 :xml_declaration_open;
     0 :xml_tag_open;
-    [] stack! :unclosed_tags;
+    [] stack! :unclosed_tokens;
+	0 :is_in_excluded_tag;
+	{ token,
+		token unclosed_tokens.push;
+		is_in_excluded_tag ! {
+			(exclude_elements E 0 >) { exclude_elements token.raw ': S B\; H } & {
+				.# now entering an excluded tag
+				1 :is_in_excluded_tag;
+			}?
+		}?
+	} :push_token;
+	
+	{ : frag_off frag_len,
+		.# we have exited the blocked token content -> close the starting-tag and insert the content-fragment.
+		self.xml_id unclosed_tokens.peek.i :(vtd.nav_to_token)
+		self.xml_id :(vtd.nav_get_content_fragment) :frag_len; :frag_off;
+		frag_len 0 < {
+			.# tag without content
+			"/>"
+			unclosed_tokens.pop;
+		}{
+			.# tag with content
+			">"
+			self.xml_id frag_off frag_len :(vtd.fragment_to_raw_string)
+		}.?
+		0 :xml_tag_open;
+		0 :is_in_excluded_tag;
+	}:emit_fragment;
+
+	{depth::num : condition,
+		xml_tag_open {
+			0 :xml_tag_open;
+			"/>"
+			unclosed_tokens.pop;
+		}?
+		depth 0 .< :depth;
+		while {depth unclosed_tokens E <} {
+			"</" unclosed_tokens.pop.raw ">"
+		}
+	}:emit_close_tags;
 
     self.xml_id :(vtd.get_token_count) .R {i,
-        [i self.xml_id i :(vtd.get_token)]
-    } O {pair,
+		(self.xml_id i :(vtd.get_token)) :{
+			i :i;
+			self.xml_id i :(vtd.token_to_raw_string) :raw;
+		} .+
+    } O {token,
         .# skip trivial whitespace
-        .# ... could be optimized for large text sections by using :(vtd.fragment_trim_whitespace)
-        (pair.[1].type ::character_data =) {self.xml_id pair.[0] :(vtd.token_to_raw_string) .trim E 0 =} & !
-    } I {pair : token i,
-        pair~ :token; :i;
+        (token.type ::character_data =) {token.raw .trim E 0 =} & !
+    } I {token,
         {
             (token.type ::dec_attr_name =) {
                 xml_declaration_open ! {
@@ -50,79 +98,251 @@ def xml::minify {exclude_elements::list self : unclosed_tags xml_declaration_ope
                 }?
             }
         }:?
+		
+		is_in_excluded_tag {
+			[ ::starting_tag ::character_data ::comment ::pi_name ::cdata_val ] token.type H {
+				0 :xml_tag_open; .# tag will eventually be closed by emit_fragment, but already mark as closed to stop tracking nested attributes
+				token.depth unclosed_tokens E < { : frag_off frag_len,
+					emit_fragment
+				}?
+			}?
+			
+			{
+				(xml_tag_open !) {} .# skip nested attributes
+				([::attr_ns ::attr_name] token.type H) {
+					" " token.raw+
+				} (::attr_val token.type =) {
+					"=\"" token.raw "\""++
+				}
+			}:?
+		}?
+		
+		is_in_excluded_tag ! {
+			[ ::starting_tag ::character_data ::comment ::pi_name ::cdata_val ] token.type H {
+				xml_tag_open {
+					(token.depth unclosed_tokens E <) {unclosed_tokens E 0 >} & {
+						.# currently open tag has no content
+						"/>"
+						unclosed_tokens.pop;
+					}{
+						">"
+					}.?
+					0 :xml_tag_open;
+				}?
+				token.depth emit_close_tags
+			}?
 
-        [ ::starting_tag ::character_data ::comment ::pi_name ::cdata_val ] token.type H {
-            xml_tag_open {
-                (token.depth unclosed_tags E <) {unclosed_tags E 0 >} & {
-                    .# currently open tag has no content
-                    "/>"
-                    unclosed_tags.pop;
-                }{
-                    ">"
-                }.?
-                0 :xml_tag_open;
-            }?
-
-            while {(token.depth unclosed_tags E <) {unclosed_tags E 0 >} &} {
-                "</" unclosed_tags.pop ">"
-            }
-        }?
-
-        {
-            (token.type ::starting_tag =) {
-                "<"
-                self.xml_id i :(vtd.token_to_raw_string)
-                    :& unclosed_tags.push;
-                1 :xml_tag_open;
-                .A""%
-            } ([::dec_attr_name ::attr_ns ::attr_name] token.type H) {
-                " "
-                self.xml_id i :(vtd.token_to_raw_string)
-                .A""%
-            } ([::dec_attr_val ::attr_val] token.type H) {
-                "=\""
-                self.xml_id i :(vtd.token_to_raw_string)
-                "\""
-                .A""%
-            } (token.type ::character_data =) {
-                self.xml_id i :(vtd.token_to_raw_string) .trim
-            } (token.type ::comment =) {
-                "<!--"
-                self.xml_id i :(vtd.token_to_raw_string)
-                "-->"
-                .A""%
-            } (token.type ::pi_name =) {
-                "<?"
-                self.xml_id i :(vtd.token_to_raw_string)
-                .A""%
-            } (token.type ::pi_val =) {
-                self.xml_id i :(vtd.token_to_raw_string) :& E 0 = {;}{" "\}.?
-                "?>"
-                .A""%
-            } (token.type ::cdata_val =) {
-                "<![CDATA["
-                self.xml_id i :(vtd.token_to_raw_string)
-                "]]>"
-                .A""%
-            } (token.type ::dtd_val =) {
-                "<!DOCTYPE"
-                self.xml_id i :(vtd.token_to_raw_string)
-                ">"
-                .A""%
-            }
-        }:?
+			{
+				(token.type ::starting_tag =) {
+					"<" token.raw +
+					token push_token
+					1 :xml_tag_open;
+				} ([::dec_attr_name ::attr_ns ::attr_name] token.type H) {
+					" " token.raw+
+				} ([::dec_attr_val ::attr_val] token.type H) {
+					"=\"" token.raw "\""++
+				} (token.type ::character_data =) {
+					token.raw.trim
+				} (token.type ::comment =) {
+					"<!--" token.raw "-->"++
+				} (token.type ::pi_name =) {
+					"<?" token.raw+
+				} (token.type ::pi_val =) {
+					token.raw E 0 = {""}{" " token.raw+}.? "?>"+
+				} (token.type ::cdata_val =) {
+					"<![CDATA[" token.raw "]]>"++
+				} (token.type ::dtd_val =) {
+					"<!DOCTYPE" token.raw ">"++
+				}
+			}:?
+		}?
     } O "" % .# partial result on stack...
+
+	is_in_excluded_tag {
+		[emit_fragment] "" % +
+	}?
 
     .# close any unclosed tags
     [
-        while {unclosed_tags E 0 >} {
-            xml_tag_open {
-                0 :xml_tag_open;
-                "/>"
-                unclosed_tags.pop;
-            }{
-                "</" unclosed_tags.pop ">"
-            }.?
-        }
+        0 emit_close_tags
     ] "" % +
+}
+
+.{?
+	Same as xml::prettify, but with a special 'exclude_elements' preset for XHTML files: ["pre", "textarea", "script", "style"]
+	Do note that this may still break documents that are making use of the CSS 'white-space' property.
+.}
+def xml::prettify_xhtml {self,
+	1 ["pre", "textarea", "script", "style"] self.prettify
+}
+
+.{?
+	Inserts non-significant whitespace into the xml document for printing.
+	- reindent_multiline_text::bool : if true lines of multiline text will be trimmed and indented individually | otherwise (if false) text blocks are kept as is.
+	- exclude_elements::list<str> : list of element names whose content won't be modified.
+	Returns the prettified document as a string.
+.}
+def xml::prettify {reindent_multiline_text::num exclude_elements::list self : unclosed_tokens xml_declaration_open xml_tag_open tag_has_multiline_content emit any_emitted is_in_excluded_tag push_token stack^,
+	0 :xml_declaration_open;
+    0 :xml_tag_open;
+	0 :tag_has_multiline_content;
+	0 :any_emitted;
+    [] stack! :unclosed_tokens;
+	0 :is_in_excluded_tag;
+	
+	{text,
+		1 :any_emitted;
+		text
+	}:emit;
+	
+	{ token,
+		token unclosed_tokens.push;
+		is_in_excluded_tag ! {
+			(exclude_elements E 0 >) { exclude_elements token.raw ': S B\; H } & {
+				.# now entering an excluded tag
+				1 :is_in_excluded_tag;
+			}?
+		}?
+	}:push_token;
+	
+	{ : frag_off frag_len,
+		.# we have exited the blocked token content -> close the starting-tag and insert the content-fragment.
+		self.xml_id unclosed_tokens.peek.i :(vtd.nav_to_token)
+		self.xml_id :(vtd.nav_get_content_fragment) :frag_len; :frag_off;
+		frag_len 0 < {
+			.# tag without content
+			"/>" emit
+			unclosed_tokens.pop;
+		}{
+			.# tag with content
+			">" self.xml_id frag_off frag_len :(vtd.fragment_to_raw_string) +emit
+		}.?
+		0 :xml_tag_open;
+		0 :is_in_excluded_tag;
+	}:emit_fragment;
+	
+	self.xml_id :(vtd.get_token_count) .R {i,
+		(self.xml_id i :(vtd.get_token)) :{
+			i :i;
+			self.xml_id i :(vtd.token_to_raw_string) :raw;
+		} .+
+    } O {token,
+        .# skip trivial whitespace
+        (token.type ::character_data =) {token.raw .trim E 0 =} & !
+    } I {token : is_multiline_text,
+        {
+            (token.type ::dec_attr_name =) {
+                xml_declaration_open ! {
+                    "<?xml" emit
+                    1 :xml_declaration_open;
+                }?
+            } (token.type ::dec_attr_val =) {
+                xml_declaration_open ! {
+                    "<?xml " emit
+                    1 :xml_declaration_open;
+                }?
+            } {
+                xml_declaration_open {
+                    "?>" emit
+                    0 :xml_declaration_open;
+                }?
+            }
+        }:?
+		
+		is_in_excluded_tag {
+			[ ::starting_tag ::character_data ::comment ::pi_name ::cdata_val ] token.type H {
+				0 :xml_tag_open; .# tag will eventually be closed by emit_fragment, but already mark as closed to stop tracking nested attributes
+				token.depth unclosed_tokens E < { : frag_off frag_len,
+					emit_fragment
+				}?
+			}?
+
+			{
+				(xml_tag_open !) {} .# skip nested attributes
+				([::attr_ns ::attr_name] token.type H) {
+					" " token.raw+emit
+				} (::attr_val token.type =) {
+					"=\"" token.raw "\""++emit
+				}
+			}:?
+		}?
+		
+		is_in_excluded_tag ! {
+			[ ::starting_tag ::character_data ::comment ::pi_name ::cdata_val ] token.type H {
+				(token.type ::character_data = !) {reindent_multiline_text {token.raw '\n' H} &} | :is_multiline_text;
+				
+				[{is_multiline_text} {tag_has_multiline_content !} {token.depth unclosed_tokens E :>}] {&} % {
+					1 :tag_has_multiline_content;
+				}?
+				xml_tag_open {
+					">" emit
+					0 :xml_tag_open;
+				}?
+
+				while {(token.depth unclosed_tokens E <) {unclosed_tokens E 0 >} &} { : pop_token,
+					unclosed_tokens.pop :pop_token;
+					tag_has_multiline_content {
+						"\n" '\t' pop_token.depth 0 .< L +emit
+					}{
+						1 :tag_has_multiline_content;
+					}.?
+					"</" pop_token.raw ">" ++emit
+				}
+				any_emitted tag_has_multiline_content & {
+					"\n" '\t' token.depth 0 .< L +emit
+				}?
+			}?
+
+			{
+				(token.type ::starting_tag =) {
+					"<" token.raw +emit
+					1 :xml_tag_open;
+					0 :tag_has_multiline_content;
+					token push_token
+				} ([::dec_attr_name ::attr_ns ::attr_name] token.type H) {
+					" " token.raw +emit
+				} ([::dec_attr_val ::attr_val] token.type H) {
+					"=\"" token.raw "\"" ++emit
+				} (token.type ::character_data =) {
+					token.raw.trim
+					reindent_multiline_text {
+						:& '\n' H {
+							"\\s*\\r?\\n\\s*" ("\n" '\t' token.depth L +) .&
+						}?
+					}?
+					emit
+				} (token.type ::comment =) {
+					"<!--" token.raw "-->" ++emit
+				} (token.type ::pi_name =) {
+					"<?" token.raw +emit
+				} (token.type ::pi_val =) {
+					token.raw E 0 ={""}{" " token.raw+}.? "?>"+emit
+				} (token.type ::cdata_val =) {
+					"<![CDATA[" token.raw "]]>" ++emit
+				} (token.type ::dtd_val =) {
+					any_emitted {"\n"}{""}.?
+					"<!DOCTYPE" token.raw ">" +++emit
+				}
+			}:?
+		}?
+    } O "" % .# partial result on stack...
+	
+	is_in_excluded_tag {
+		[emit_fragment] "" % +
+	}{
+		xml_tag_open {">"+}?
+	}.?
+	
+	.# close any unclosed tags
+	[
+		while {unclosed_tokens E 0 >} { : pop_token,
+			unclosed_tokens.pop :pop_token;
+			tag_has_multiline_content {
+				"\n" '\t' pop_token.depth 0 .< L
+			}{
+				1 :tag_has_multiline_content;
+			}.?
+			"</" pop_token.raw ">"
+		}
+	] "" % +
 }
