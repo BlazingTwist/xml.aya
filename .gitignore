@@ -10,6 +10,7 @@ target/
 .idea/libraries/
 .idea/sonarlint.xml
 .idea/uiDesigner.xml
+.idea/zigbrains.xml
 *.iws
 *.iml
 *.ipr

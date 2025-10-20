@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="AyaTests" basedir="." default="test-all">
+    <dirname property="scripts.dir" file="${ant.file.AyaTests}"/>
+    <property name="root.dir" location="${scripts.dir}/.."/>
+
+    <!-- verify that all parameters were passed -->
+    <fail unless="build-dir" message="build-dir was not defined (maven issue)"/>
+    <fail unless="xml.aya.zip" message="xml.aya.zip was not defined (maven issue)"/>
+    <fail unless="aya.jar" message="aya.jar was not defined (maven issue)"/>
+    <fail unless="aya.runtime.zip" message="aya.runtime.zip was not defined (maven issue)"/>
+
+    <!-- re-define the parameters, so that they can be used with autocompletion -->
+    <property name="build-dir" location="${root.dir}/target"/>
+    <property name="xml.aya.zip" location="ALREADY_DEFINED"/>
+    <property name="aya.jar" location="ALREADY_DEFINED"/>
+    <property name="aya.runtime.zip" location="ALREADY_DEFINED"/>
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+            <pathelement location="${scripts.dir}/libs/ant-contrib-1.0b3.jar"/>
+        </classpath>
+    </taskdef>
+
+    <target name="test-all">
+        <if>
+            <available file="${xml.aya.zip}"/>
+            <else>
+                <fail message="xml.aya.zip does not exist: ${xml.aya.zip}"/>
+            </else>
+        </if>
+        <if>
+            <available file="${aya.runtime.zip}"/>
+            <else>
+                <fail message="aya.runtime.zip does not exist: ${aya.runtime.zip}"/>
+            </else>
+        </if>
+
+        <property name="test.dir" location="${build-dir}/integration-tests/"/>
+        <!-- delete data from previous tests -->
+        <delete dir="${test.dir}" failonerror="false"/>
+        <mkdir dir="${test.dir}/pkg/xml.aya"/>
+        <move file="${aya.jar}" todir="${test.dir}"/>
+        <unzip src="${xml.aya.zip}" dest="${test.dir}/pkg/xml.aya"/>
+        <unzip src="${aya.runtime.zip}" dest="${test.dir}"/>
+
+        <path id="cp.aya">
+            <fileset dir="${test.dir}" includes="**/*.jar"/>
+        </path>
+
+        <property name="error.log.str" value=""/>
+        <var name="error.log.str" unset="true"/>
+        <trycatch>
+            <try>
+                <java
+                        fork="true"
+                        dir="${test.dir}"
+                        classname="ui.AyaIDE"
+                        failonerror="true"
+                        errorproperty="error.log.str"
+                        classpathref="cp.aya"
+                >
+                    <jvmarg value="-Duser.language=en"/>
+                    <jvmarg value="-Duser.country=US"/>
+                    <arg value="${test.dir}"/>
+                    <arg value="-e"/>
+                    <arg value="import pkg \&quot;xml.aya\&quot; pkg.test"/>
+                </java>
+                <!-- if the test did not fail, repeat the error logs to the console -->
+                <echo level="error" message="${error.log.str}"/>
+            </try>
+            <catch>
+                <!-- if the test failed, use the error log as the failure message -->
+                <fail message="${error.log.str}"/>
+            </catch>
+        </trycatch>
+    </target>
+</project>

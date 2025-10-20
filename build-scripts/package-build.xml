@@ -19,12 +19,12 @@
         <property name="init.aya" location="${build-dir}/init.aya"/>
         <property name="package.json" location="${build-dir}/package.json"/>
         
-        <copy file="${fat.jar}" todir="${build-dir}"/>
+        <copy file="${fat.jar}" todir="${build-dir}" overwrite="true"/>
         
-        <copy file="${scripts.dir}/init.template.aya" tofile="${init.aya}"/>
+        <copy file="${scripts.dir}/init.template.aya" tofile="${init.aya}" overwrite="true"/>
         <replace file="${init.aya}" token="[AYA-XML-JAR]" value="${fat.jar.name}" failonnoreplacements="true"/>
 
-        <copy file="${scripts.dir}/package.template.json" tofile="${package.json}"/>
+        <copy file="${scripts.dir}/package.template.json" tofile="${package.json}" overwrite="true"/>
         <replace file="${package.json}" token="[VERSION]" value="${version}" failonnoreplacements="true"/>
 
         <zip destfile="${build-dir}/${fat.jar.name}.zip">

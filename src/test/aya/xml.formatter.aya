@@ -10,29 +10,33 @@
     - this does not support "special" tags at all (processing instruction, cdata, entity-references)
       notepad++ 'XML Tools' > 'Linearize'
 .}
-import xml
+require xml {xml}
 
-"<?xml   version  =  "1.0"   encoding="UTF-8" standalone="no"?>
-   <?processing?>
-   <!DOCTYPE note SYSTEM "Note.dtd">
-   <!-- comment -->
-   <root   xmlns:ns = "nsUrl"  ><meta>
- 		<!--    comment    -->
- 		<![CDATA[  any<!--character-->data  ]]>
- 		<?processing?>
- 		<?processing instruction?>
- 		&lt;
- 	</meta>
- 	<attrNode att="test"/>
- 	<ns:nsNode ns:att2="test2" att3="test3">
- 		<foo>1</foo>
- 		<bar></bar>
- 	</ns:nsNode>
- 	<ns:nsNode ns:att2="test2" att3="test3">
- 		<foo>2</foo>
- 		<bar/>
- 	</ns:nsNode>
- </root>  ":maxified;
+[
+    "<?xml   version  =  \"1.0\"   encoding=\"UTF-8\" standalone=\"no\"?>"
+    "   <?processing?>"
+    "   <!DOCTYPE note SYSTEM \"Note.dtd\">"
+    "   <!-- comment -->"
+    "   <root   xmlns:ns = \"nsUrl\"  ><meta>"
+    " 		<!--    comment    -->"
+    " 		<![CDATA[  any<!--character-->data  ]]>"
+    " 		<?processing?>"
+    " 		<?processing instruction?>"
+    " 		&lt;"
+    " 	</meta>"
+    " 	<attrNode att=\"test\"/>"
+    " 	<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+    " 		<foo>1</foo>"
+    " 		<bar></bar>"
+    " 	</ns:nsNode>"
+    " 	<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+    " 		<foo>long"
+    "       multiline"
+    "       text</foo>"
+    " 		<bar/>"
+    " 	</ns:nsNode>"
+    " </root>  "
+] "\n" % :maxified;
 
 [
     "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"
@@ -53,9 +57,9 @@ import xml
     "<bar/>"
     "</ns:nsNode>"
     "<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
-    "<foo>long
-		multiline
-		text</foo>"
+    "<foo>long\n"
+	"       multiline\n"
+	"       text</foo>"
     "<bar/>"
     "</ns:nsNode>"
     "</root>"
@@ -91,11 +95,9 @@ import xml
 ] "\n" % :prettified;
 
 "test minifying 'maxified' xml.." :P
-(maxified xml.loads .minify) (minified) :!
-"test minifying 'prettified' xml.." :P
-(prettified xml.loads .minify) (minified) :!
+(maxified 1 xml.loads []\ .minify) (minified) :!
 
 "test prettifying 'maxified' xml.." :P
-(maxified xml.loads .prettify) (prettified) :!
+(maxified 1 xml.loads []\ .prettify) (prettified) :!
 "test prettifying 'minified' xml.." :P
-(minified xml.loads .prettify) (prettified) :!
+(minified 1 xml.loads []\ .prettify) (prettified) :!

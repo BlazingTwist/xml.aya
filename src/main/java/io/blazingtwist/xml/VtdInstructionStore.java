@@ -1,0 +1,99 @@
+package io.blazingtwist.xml;
+
+import aya.instruction.named.NamedInstructionStore;
+import aya.instruction.named.NamedOperator;
+import io.blazingtwist.xml.instructions.vtd.VtdAllEncodings;
+import io.blazingtwist.xml.instructions.vtd.VtdAllTokenTypes;
+import io.blazingtwist.xml.instructions.vtd.VtdFragmentExpandWhitespace;
+import io.blazingtwist.xml.instructions.vtd.VtdFragmentRemove;
+import io.blazingtwist.xml.instructions.vtd.VtdFragmentToRawString;
+import io.blazingtwist.xml.instructions.vtd.VtdFragmentTrimWhitespace;
+import io.blazingtwist.xml.instructions.vtd.VtdGetEncoding;
+import io.blazingtwist.xml.instructions.vtd.VtdGetNestingLevel;
+import io.blazingtwist.xml.instructions.vtd.VtdGetToken;
+import io.blazingtwist.xml.instructions.vtd.VtdGetTokenCount;
+import io.blazingtwist.xml.instructions.vtd.VtdInsertStr;
+import io.blazingtwist.xml.instructions.vtd.VtdNavFindElement;
+import io.blazingtwist.xml.instructions.vtd.VtdNavFindText;
+import io.blazingtwist.xml.instructions.vtd.VtdNavGetAttrCount;
+import io.blazingtwist.xml.instructions.vtd.VtdNavGetContentFragment;
+import io.blazingtwist.xml.instructions.vtd.VtdNavGetDepth;
+import io.blazingtwist.xml.instructions.vtd.VtdNavGetElementFragment;
+import io.blazingtwist.xml.instructions.vtd.VtdNavInsertAfterElement;
+import io.blazingtwist.xml.instructions.vtd.VtdNavInsertAfterHead;
+import io.blazingtwist.xml.instructions.vtd.VtdNavInsertAttribute;
+import io.blazingtwist.xml.instructions.vtd.VtdNavInsertBeforeElement;
+import io.blazingtwist.xml.instructions.vtd.VtdNavInsertBeforeTail;
+import io.blazingtwist.xml.instructions.vtd.VtdNavRemove;
+import io.blazingtwist.xml.instructions.vtd.VtdNavReplaceName;
+import io.blazingtwist.xml.instructions.vtd.VtdNavToFirstChild;
+import io.blazingtwist.xml.instructions.vtd.VtdNavToLastChild;
+import io.blazingtwist.xml.instructions.vtd.VtdNavToNextSibling;
+import io.blazingtwist.xml.instructions.vtd.VtdNavToParent;
+import io.blazingtwist.xml.instructions.vtd.VtdNavToPrevSibling;
+import io.blazingtwist.xml.instructions.vtd.VtdNavToRoot;
+import io.blazingtwist.xml.instructions.vtd.VtdTokenRemove;
+import io.blazingtwist.xml.instructions.vtd.VtdTokenReplace;
+import io.blazingtwist.xml.instructions.vtd.VtdTokenToNormalizedString;
+import io.blazingtwist.xml.instructions.vtd.VtdTokenToRawString;
+import io.blazingtwist.xml.instructions.vtd.VtdXPathCompile;
+import io.blazingtwist.xml.instructions.vtd.VtdXPathEvalBool;
+import io.blazingtwist.xml.instructions.vtd.VtdXPathEvalNum;
+import io.blazingtwist.xml.instructions.vtd.VtdXPathEvalStr;
+import io.blazingtwist.xml.instructions.vtd.VtdXPathNext;
+import io.blazingtwist.xml.instructions.vtd.VtdXPathReset;
+import io.blazingtwist.xml.instructions.vtd.xml.VtdNavFindAttrValue;
+import io.blazingtwist.xml.instructions.vtd.xmlns.VtdNavFindAttrValueNs;
+
+import java.util.Collection;
+import java.util.List;
+
+public class VtdInstructionStore implements NamedInstructionStore {
+	@Override
+	public Collection<NamedOperator> getNamedInstructions() {
+		return List.of(
+				new VtdNavFindAttrValue(),
+				new VtdNavFindAttrValueNs(),
+				new VtdAllEncodings(),
+				new VtdAllTokenTypes(),
+				new VtdFragmentExpandWhitespace(),
+				new VtdFragmentRemove(),
+				new VtdFragmentToRawString(),
+				new VtdFragmentTrimWhitespace(),
+				new VtdGetEncoding(),
+				new VtdGetNestingLevel(),
+				new VtdGetToken(),
+				new VtdGetTokenCount(),
+				new VtdInsertStr(),
+				new VtdNavFindElement(),
+				new VtdNavFindText(),
+				new VtdNavGetAttrCount(),
+				new VtdNavGetContentFragment(),
+				new VtdNavGetDepth(),
+				new VtdNavGetElementFragment(),
+				new VtdNavInsertAfterElement(),
+				new VtdNavInsertAfterHead(),
+				new VtdNavInsertAttribute(),
+				new VtdNavInsertBeforeElement(),
+				new VtdNavInsertBeforeTail(),
+				new VtdNavRemove(),
+				new VtdNavReplaceName(),
+				new VtdNavToFirstChild(),
+				new VtdNavToLastChild(),
+				new VtdNavToNextSibling(),
+				new VtdNavToParent(),
+				new VtdNavToPrevSibling(),
+				new VtdNavToRoot(),
+				new VtdTokenRemove(),
+				new VtdTokenReplace(),
+				new VtdTokenToNormalizedString(),
+				new VtdTokenToRawString(),
+				new VtdXPathCompile(),
+				new VtdXPathEvalBool(),
+				new VtdXPathEvalNum(),
+				new VtdXPathEvalStr(),
+				new VtdXPathNext(),
+				new VtdXPathReset()
+		);
+	}
+}
