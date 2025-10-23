@@ -1,2 +1,3 @@
 import ".[AYA-XML-JAR]"
-require ".src/xml" {xml}
+require ".src/xpath" *
+require ".src/xml" *

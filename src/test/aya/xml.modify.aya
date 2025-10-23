@@ -1,0 +1,236 @@
+require xml {xml}
+
+[
+    "<a>"
+        "<b x=\"5\" y=\"6\">"
+            "<c>1</c>"
+            "<c>2</c>"
+			"<c/>"
+        "</b>"
+        "<b x=\"7\" y=\"8\">"
+            "<c>3</c>"
+            "<c>4</c>"
+			"<c/>"
+        "</b>"
+    "</a>"
+] "" % :original_xml;
+
+[
+    "<a>"
+        "<b x=\"5\" y=\"6\">"
+            "<c>1</c>"
+			"<c/>"
+        "</b>"
+    "</a>"
+] "" % :removed_element_xml;
+
+[
+    "<a>"
+        "<b y=\"6\">"
+            "<c>1</c>"
+            "<c>2</c>"
+			"<c/>"
+        "</b>"
+        "<b x=\"7\">"
+            "<c>3</c>"
+            "<c>4</c>"
+			"<c/>"
+        "</b>"
+    "</a>"
+] "" % :removed_attr_xml;
+
+[
+    "<a>"
+        "<b>"
+            "<c>1</c>"
+            "<c>2</c>"
+			"<c/>"
+        "</b>"
+        "<b>"
+            "<c>3</c>"
+            "<c>4</c>"
+			"<c/>"
+        "</b>"
+    "</a>"
+] "" % :removed_all_attr_xml;
+
+[
+    "<a>"
+        "<b x=\"5\" y=\"6\">"
+            "<c></c>"
+            "<c></c>"
+			"<c/>"
+        "</b>"
+        "<b x=\"7\" y=\"8\">"
+            "<c></c>"
+            "<c></c>"
+			"<c/>"
+        "</b>"
+    "</a>"
+] "" % :removed_text_xml;
+
+[
+    "<a2>"
+        "<b x=\"5\" y=\"6\">"
+            "<c>1</c>"
+            "<d>9</d>"
+        "</b>"
+        "<b x=\"7\" y=\"8\">"
+            "<c>3</c>"
+            "<c>4</c>"
+			"<c/>"
+        "</b>"
+    "</a2>"
+] "" % :replaced_elements_xml;
+
+[
+    "<a>"
+        "<b x=\"5.foo\" y2=\"bar.6\">"
+            "<c>1</c>"
+            "<c>2</c>"
+			"<c/>"
+        "</b>"
+        "<b x=\"7.foo\" y2=\"bar.8\">"
+            "<c>3</c>"
+            "<c>4</c>"
+			"<c/>"
+        "</b>"
+    "</a>"
+] "" % :replaced_attributes_xml;
+
+[
+    "<a>"
+        "<b x=\"5\" y=\"6\">"
+            "<c>1.foo</c>"
+            "<c>bar.2</c>"
+			"<c/>"
+        "</b>"
+        "<b x=\"7\" y=\"8\">"
+            "<c>3.foo</c>"
+            "<c>bar.4</c>"
+			"<c/>"
+        "</b>"
+    "</a>"
+] "" % :replaced_text_xml;
+
+"sanity-check xml.to_str" :P
+	original_xml 1 xml.loads :doc;
+	doc.to_str original_xml :!
+	doc.close
+
+.{
+    Removing Elements / Attributes / Text
+.}
+"test removing elements" :P
+	original_xml 1 xml.loads :doc;
+	"/a/b[1]/c[2]" doc.xpath { doc.xml_id :(vtd.nav_remove) }O;
+	"/a/b[2]" doc.xpath { doc.xml_id :(vtd.nav_remove) }O;
+	doc.to_str removed_element_xml :!
+	doc.close
+"test removing attributes" :P
+	original_xml 1 xml.loads :doc;
+	"//b[1]/@x" doc.xpath { doc.xml_id :(vtd.nav_remove) }O;
+	"//b[2]/@y" doc.xpath { doc.xml_id :(vtd.nav_remove) }O;
+	doc.to_str removed_attr_xml :!
+	doc.close
+"test removing attributes by wildcard" :P
+	original_xml 1 xml.loads :doc;
+	"//@*" doc.xpath { doc.xml_id :(vtd.nav_remove) }O;
+	doc.to_str removed_all_attr_xml :!
+	doc.close
+"test removing text" :P
+	original_xml 1 xml.loads :doc;
+	"//text()" doc.xpath { doc.xml_id :(vtd.nav_remove) }O;
+	doc.to_str removed_text_xml :!
+	doc.close
+
+.{
+    Replacing Elements / Attributes / Text
+.}
+"test replacing elements" :P
+	original_xml 1 xml.loads :doc;
+	"/a" doc.xpath { doc.xml_id "a2" :(vtd.nav_replace_name) }O;
+	"/a/b[1]/c[2]" doc.xpath { : offset,
+		doc.xml_id :& :(vtd.nav_get_element_fragment) \:offset\ :(vtd.fragment_remove)
+		doc.xml_id offset "<d>9</d>" :(vtd.insert_str)
+	}O;
+	.# expect: even though c[2] was replaced above, it should not affect the xpath evaluation until the document is re-parsed.
+	"/a/b[1]/c[3]" doc.xpath { doc.xml_id :(vtd.nav_remove) }O;
+	doc.to_str replaced_elements_xml :!
+	doc.close
+"test replacing attributes" :P
+	original_xml 1 xml.loads :doc;
+	"//@x" doc.xpath { name_idx : new_value,
+		doc.xml_id :& name_idx 1+ :&@\ :(vtd.token_to_raw_string) ".foo"+ :(vtd.token_replace)
+	}O;
+	"//@y" doc.xpath { name_idx,
+		doc.xml_id name_idx "y2" :(vtd.token_replace)
+	}O;
+	.# expect: even though @y was replaced with @y2 above, it should not affect the xpath evaluation until the document is re-parsed.
+	"//@y" doc.xpath { name_idx : new_value,
+		doc.xml_id :& name_idx 1+ :&@\ :(vtd.token_to_raw_string) "bar."\+ :(vtd.token_replace)
+	}O;
+	doc.to_str replaced_attributes_xml :!
+	doc.close
+"test replacing text" :P
+	original_xml 1 xml.loads :doc;
+	"//b/c[1]/text()" doc.xpath { token_idx,
+		doc.xml_id :& token_idx :&@\ :(vtd.token_to_raw_string) ".foo"+ :(vtd.token_replace)
+	}O;
+	"//b/c[2]" doc.xpath { : 𫱬 new_value, .# alternative approach by modifying the content fragment (this replaces nested elements as well, not just text)
+		.# note: 𫱬 is a tuple variable used for storing the offset and length.
+		doc.xml_id :& :(vtd.nav_get_content_fragment) :𫱬 :(vtd.fragment_to_raw_string) "bar."\+ :new_value;
+		doc.xml_id 𫱬 new_value :(vtd.fragment_replace)
+	}O;
+	doc.to_str replaced_text_xml :!
+	doc.close
+
+.{
+    Adding Elements / Attributes / Text
+.}
+"test adding elements" :P
+	removed_element_xml 1 xml.loads :doc;
+	.# This test does not concern itself with whitespace between elements.
+	.# For that, you may want to use xml.prettify and the 'extra_indentation' option to pre-process your inserted text.
+	"/a/b/c[2]" doc.xpath {;
+		doc.xml_id "<c>2</c>" :(vtd.nav_insert_before_element)
+	}O;
+	"/a/b" doc.xpath {token_idx : insert_text,
+		["<b x=\"7\" y=\"8\">"
+            "<c>3</c>"
+            "<c>4</c>"
+			"<c/>"
+        "</b>"] "" % :insert_text;
+		doc.xml_id insert_text :(vtd.nav_insert_after_element)
+	}O;
+	doc.to_str original_xml :!
+	doc.close
+"test adding attributes" :P
+	removed_attr_xml 1 xml.loads :doc;
+	"/a/b[1]" doc.xpath {;
+		doc.xml_id "x=\"5\"" :(vtd.nav_insert_attribute)
+	}O;
+	"/a/b[2]/@x" doc.xpath {;
+		doc.xml_id "y=\"8\"" :(vtd.nav_insert_attribute)
+	}O;
+	doc.to_str original_xml :!
+	doc.close
+"test adding text" :P
+	removed_text_xml 1 xml.loads :doc;
+	0:n;
+	"//c/text()" doc.xpath {token_idx,
+		.# this works because <c/> does not have a text node. If you want to assign text there, you can check using 'nav_get_content_fragment' and replace the element.
+		::nB
+		doc.xml_id token_idx "$(n)" :(vtd.token_replace)
+	}O;
+	doc.to_str original_xml :!
+	doc.close
+
+.# detect unexpected operands on stack
+.A :& E :& 0 > {
+	.# stack has leak_stack::list len::num
+	:{}
+	\"Operand leak! There are "\+ " items on the stack. Expected 0"+ \.:["msg"]
+	.:["stack"]
+	.D
+}{;}.?

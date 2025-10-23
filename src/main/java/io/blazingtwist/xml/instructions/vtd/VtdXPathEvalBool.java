@@ -10,7 +10,7 @@ import io.blazingtwist.xml.instances.InstanceType;
 public class VtdXPathEvalBool extends NamedOperator {
 	public VtdXPathEvalBool() {
 		super("vtd.xpath_eval_bool", "xpath_id::num -> bool :"
-				+ " Evaluate the xpath to a bool. This operation may move the cursor.");
+				+ " Evaluate the xpath to a bool, relative to the current Nav position.");
 	}
 
 	@Override

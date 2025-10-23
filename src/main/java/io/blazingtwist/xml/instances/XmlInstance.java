@@ -10,10 +10,14 @@ public class XmlInstance extends InstanceData {
 	private XMLModifier mod;
 
 	public XmlInstance(byte[] xmlBytes, boolean ignoreWhitespace) throws Exception {
+		this(xmlBytes, ignoreWhitespace, false);
+	}
+
+	public XmlInstance(byte[] xmlBytes, boolean ignoreWhitespace, boolean namespace) throws Exception {
 		gen = new VTDGen();
 		gen.enableIgnoredWhiteSpace(!ignoreWhitespace);
 		gen.setDoc(xmlBytes);
-		gen.parse(false);
+		gen.parse(namespace);
 		nav = gen.getNav();
 		mod = new XMLModifier(nav);
 	}

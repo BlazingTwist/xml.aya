@@ -1,10 +1,11 @@
-package io.blazingtwist.xml.instructions.xml;
+package io.blazingtwist.xml.instructions.vtd;
 
 import aya.eval.BlockEvaluator;
 import aya.exceptions.runtime.IOError;
 import aya.instruction.named.NamedOperator;
 import com.ximpleware.ModifyException;
 import com.ximpleware.TranscodeException;
+import io.blazingtwist.xml.AyaHelper;
 import io.blazingtwist.xml.exception.ModifyRuntimeException;
 import io.blazingtwist.xml.exception.TranscodeRuntimeException;
 import io.blazingtwist.xml.instances.InstanceManager;
@@ -13,10 +14,11 @@ import io.blazingtwist.xml.instances.XmlInstance;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
-public class XmlDumpS extends NamedOperator {
-	public XmlDumpS() {
-		super("xml.dumps", "(xml_id|xmlns_id)::num -> str :"
+public class VtdDumpS extends NamedOperator {
+	public VtdDumpS() {
+		super("vtd.dumps", "(xml_id|xmlns_id)::num -> str :"
 				+ " write the xml and all modifications to a string.");
 	}
 
@@ -26,6 +28,7 @@ public class XmlDumpS extends NamedOperator {
 		ByteArrayOutputStream bao = new ByteArrayOutputStream();
 		try {
 			xml.getMod().output(bao);
+			AyaHelper.pushValue(blockEvaluator, bao.toString(Charset.defaultCharset()));
 		} catch (IOException e) {
 			throw new IOError(opName(), "xml/ns", e);
 		} catch (ModifyException e) {

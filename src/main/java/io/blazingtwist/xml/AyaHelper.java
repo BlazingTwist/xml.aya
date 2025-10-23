@@ -4,6 +4,7 @@ import aya.eval.BlockEvaluator;
 import aya.exceptions.runtime.TypeError;
 import aya.instruction.named.NamedOperator;
 import aya.obj.Obj;
+import aya.obj.dict.Dict;
 import aya.obj.list.List;
 import aya.obj.number.Num;
 import aya.util.Casting;
@@ -24,6 +25,15 @@ public class AyaHelper {
 
 	public static String popString(BlockEvaluator blockEvaluator) {
 		return blockEvaluator.pop().str();
+	}
+
+	public static Dict popDict(NamedOperator inst, BlockEvaluator blockEvaluator) {
+		Obj obj = blockEvaluator.pop();
+		if (obj.isa(Obj.DICT)) {
+			return Casting.asDict(obj);
+		} else {
+			throw new TypeError(inst, "D", obj);
+		}
 	}
 
 	public static void pushValue(BlockEvaluator blockEvaluator, Obj value) {

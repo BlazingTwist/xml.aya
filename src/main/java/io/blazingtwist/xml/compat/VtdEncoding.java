@@ -106,6 +106,7 @@ public enum VtdEncoding {
 
 	public final Symbol symbol;
 	public final Charset charset;
+	public final int avgBytesPerChar; // This is basically what vtd-xml does internally, I strongly suspect this will break for utf-8
 
 	VtdEncoding() {
 		String charsetName = this.name().replace("_", "-");
@@ -117,10 +118,12 @@ public enum VtdEncoding {
 			charset = Charset.defaultCharset();
 		}
 		this.charset = charset;
+		this.avgBytesPerChar = Math.round(charset.newEncoder().averageBytesPerChar());
 	}
 
 	VtdEncoding(Charset charset) {
 		this.symbol = SymbolTable.getSymbol(charset.name());
 		this.charset = charset;
+		this.avgBytesPerChar = Math.round(charset.newEncoder().averageBytesPerChar());
 	}
 }

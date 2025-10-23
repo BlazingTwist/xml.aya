@@ -1,4 +1,2 @@
 io.blazingtwist.xml.VtdInstructionStore
-io.blazingtwist.xml.XmlInstructionStore
-io.blazingtwist.xml.XmlnsInstructionStore
 io.blazingtwist.xml.XsdInstructionStore

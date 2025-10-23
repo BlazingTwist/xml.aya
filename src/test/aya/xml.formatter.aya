@@ -239,6 +239,54 @@ require xml {xml}
     "</root>"
 ] "\n" % :prettified_keep_multiline;
 
+[
+    "    <?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"
+    "    <?processing?>"
+    "    <!DOCTYPE note SYSTEM \"Note.dtd\">"
+    "    <!-- comment -->"
+    "    <root xmlns:ns=\"nsUrl\">"
+    "    	<meta>"
+    "    		<!--    comment    -->"
+    "    		<![CDATA[  any<!--character-->data  ]]>"
+    "    		<?processing?>"
+    "    		<?processing instruction?>"
+    "    		&lt;"
+    "    	</meta>"
+    "    	<attrNode att=\"test\"></attrNode>"
+    [
+        "    	<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+        " 		<foo>1</foo>"
+        " 		<bar></bar>"
+        " 	</ns:nsNode>"
+    ] "\n" %
+    [
+        "    	<ns:nsNode ns:att2=\"test2\" att3=\"test3\">"
+        " 		<foo>  long"
+        "       multiline"
+        "       text  </foo>"
+        " 		<bar/>"
+        " 	</ns:nsNode>"
+    ] "\n" %
+    "    </root>"
+] "\n" % :prettified_partial_ns_node_extra_indent;
+
+:{
+	1:reindent_multiline_text;
+}:opts_mod_mlt;
+:{
+	1:reindent_multiline_text;
+	["nsNode"]:exclude_elements;
+}:opts_partial_nsnode;
+:{
+	1:reindent_multiline_text;
+	["root"]:exclude_elements;
+}:opts_partial_root;
+:{
+	1:reindent_multiline_text;
+	["nsNode"]:exclude_elements;
+	"    ":extra_indentation;
+}:opts_partial_indent;
+
 "test minifying 'maxified' xml.." :P
 (maxified 1 xml.loads []\ .minify) (minified) :!
 "test minifying 'maxified' xml excluding 'nsNode'.." :P
@@ -247,12 +295,24 @@ require xml {xml}
 (maxified 1 xml.loads ["root"]\ .minify) (minified_partial_root) :!
 
 "test prettifying 'maxified' xml.." :P
-(maxified 1 xml.loads 1\ []\ .prettify) (prettified) :!
+(maxified 1 xml.loads opts_mod_mlt\ .prettify) (prettified) :!
 "test prettifying 'minified' xml.." :P
-(minified 1 xml.loads 1\ []\ .prettify) (prettified) :!
+(minified 1 xml.loads opts_mod_mlt\ .prettify) (prettified) :!
 "test prettifying 'maxified' xml excluding 'nsNode'.." :P
-(maxified 1 xml.loads 1\ ["nsNode"]\ .prettify) (prettified_partial_ns_node) :!
+(maxified 1 xml.loads opts_partial_nsnode\ .prettify) (prettified_partial_ns_node) :!
 "test prettifying 'maxified' xml excluding 'root'.." :P
-(maxified 1 xml.loads 1\ ["root"]\ .prettify) (prettified_partial_root) :!
+(maxified 1 xml.loads opts_partial_root\ .prettify) (prettified_partial_root) :!
 "test prettifying 'maxified' xml preserving multiline text.." :P
-(minified 1 xml.loads 0\ []\ .prettify) (prettified_keep_multiline) :!
+(minified 1 xml.loads :{}\ .prettify) (prettified_keep_multiline) :!
+"test prettifying 'maxified' xml excluding 'nsNode' and adding extra indentation.." :P
+(maxified 1 xml.loads opts_partial_indent\ .prettify) (prettified_partial_ns_node_extra_indent) :!
+
+
+.# detect unexpected operands on stack
+.A :& E :& 0 > {
+	.# stack has leak_stack::list len::num
+	:{}
+	\"Operand leak! There are "\+ " items on the stack. Expected 0"+ \.:["msg"]
+	.:["stack"]
+	.D
+}{;}.?

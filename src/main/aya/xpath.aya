@@ -1,0 +1,35 @@
+class xpath
+
+def xpath::compile {xml_id::num xpath_str::str self,
+	xml_id :& xpath_str :(vtd.xpath_compile) self!
+}
+
+def xpath::compile_ns {xml_id::num ns_dict::dict xpath_str::str self,
+	xml_id :& ns_dict xpath_str :(vtd.xpath_compile_ns) self!
+}
+
+def xpath::__init__ {xml_id::num xpath_id::num self,
+	xml_id self.:xml_id;
+    xpath_id self.:xpath_id;
+}
+
+def xpath::__repr__ {self,
+	"($(self.xml_id self.xpath_id) xpath!)"
+}
+
+.{? Iterate over the nodeset result of the xpath.
+	This resets the xpath when done. (for repeated iterations)
+	The block 'blk' is called with the token_index. The nav's cursor is positioned on that token_index as well.
+.}
+def xpath::__each__ {blk self,
+	self.xml_id :xi;
+	self.xpath_id :xpi;
+	[
+		while {
+			self.xpath_id :(vtd.xpath_next) :& 0> {
+				:& self.xml_id\:(vtd.nav_to_token) 1
+			}{;0}.?
+		} {blk}
+	]
+	self.xpath_id :(vtd.xpath_reset)
+}

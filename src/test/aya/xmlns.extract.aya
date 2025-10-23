@@ -1,0 +1,93 @@
+.{ this duplicates a subset of the xml.extract tests but with namespace support in mind .}
+
+require xml {xmlns}
+
+[
+    "<ns1:a xmlns:ns1=\"example:namespace/1\">"
+        "<b xmlns:ns2=\"example:namespace/2\" ns1:x=\"5\" ns2:x=\"6\">"
+            "<c>1</c>"
+            "<ns2:c>2</ns2:c>"
+			"<ns1:c/>"
+        "</b>"
+        "<b xmlns:ns2=\"example:namespace/3\" ns1:x=\"7\" ns2:x=\"8\">"
+            "<ns2:c>3</ns2:c>"
+            "<ns1:c>4</ns1:c>"
+			"<c/>"
+        "</b>"
+    "</ns1:a>"
+] "" % :xml_str;
+
+:{
+	[
+		:{
+			[5]:attr_a;
+			[6]:attr_b;
+			[]:attr_c;
+			[5 6]:attr_all;
+			[:{["1"]:value;}]:c;
+			[:{[]:value;}]:c_a;
+			[:{["2"]:value;}]:c_b;
+			[]:c_c;
+			[
+				:{ ["1"]:value; }
+				:{ ["2"]:value; }
+				:{ []:value; }
+			]:c_all;
+		}
+		:{
+			[7]:attr_a;
+			[]:attr_b;
+			[8]:attr_c;
+			[7 8]:attr_all;
+			[:{[]:value;}]:c;
+			[:{["4"]:value;}]:c_a;
+			[]:c_b;
+			[:{["3"]:value;}]:c_c;
+			[
+				:{ ["3"]:value; }
+				:{ ["4"]:value; }
+				:{ []:value; }
+			]:c_all;
+		}
+	]:b;
+}:expected;
+
+:{
+	"text()":value;
+}:type_c;
+
+:{
+	["@ex1:x" num] :attr_a;
+	["@ex2:x" num] :attr_b;
+	["@ex3:x" num] :attr_c;
+	["@*" num] :attr_all;
+	["c" type_c] :c;
+	["ex1:c" type_c] :c_a;
+	["ex2:c" type_c] :c_b;
+	["ex3:c" type_c] :c_c;
+	["*[local-name(.)=\"c\"]" type_c] :c_all;
+}:type_b;
+
+:{
+	["//b" type_b] :b;
+}:type_root;
+
+
+:{ .# namespace prefix can be chosen arbitrarily
+	"example:namespace/1":"ex1";
+	"example:namespace/2":"ex2";
+	"example:namespace/3":"ex3";
+}:full_ns_dict;
+
+"test extracting values from xmlns":P
+(xml_str 1 xmlns.loads full_ns_dict\ type_root\ .extract) (expected) :!
+
+
+.# detect unexpected operands on stack
+.A :& E :& 0 > {
+	.# stack has leak_stack::list len::num
+	:{}
+	\"Operand leak! There are "\+ " items on the stack. Expected 0"+ \.:["msg"]
+	.:["stack"]
+	.D
+}{;}.?

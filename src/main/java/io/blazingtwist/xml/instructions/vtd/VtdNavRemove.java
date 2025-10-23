@@ -4,6 +4,10 @@ import aya.eval.BlockEvaluator;
 import aya.instruction.named.NamedOperator;
 import com.ximpleware.ModifyException;
 import com.ximpleware.NavException;
+import com.ximpleware.VTDNav;
+import com.ximpleware.XMLModifier;
+import io.blazingtwist.xml.compat.VtdEncoding;
+import io.blazingtwist.xml.compat.VtdFragment;
 import io.blazingtwist.xml.exception.ModifyRuntimeException;
 import io.blazingtwist.xml.exception.NavRuntimeException;
 import io.blazingtwist.xml.instances.InstanceManager;
@@ -23,11 +27,46 @@ public class VtdNavRemove extends NamedOperator {
 	public void execute(BlockEvaluator blockEvaluator) {
 		XmlInstance xml = InstanceManager.popInstance(this, blockEvaluator, InstanceType.Xml, InstanceType.Xmlns);
 		try {
-			xml.getMod().remove();
+			VTDNav nav = xml.getNav();
+			int curIdx = nav.getCurrentIndex();
+			int tokenType = nav.getTokenType(curIdx);
+			if (tokenType == VTDNav.TOKEN_ATTR_NAME || tokenType == VTDNav.TOKEN_ATTR_NS || tokenType == VTDNav.TOKEN_ATTR_VAL) {
+				if (tokenType == VTDNav.TOKEN_ATTR_VAL) {
+					curIdx--;
+				}
+				int attrStart = nav.getTokenOffset(curIdx);
+				int attrEnd = nav.getTokenOffset(curIdx + 1) + nav.getTokenLength(curIdx + 1) + 1; // I *think* +1 is for the closing quote...
+				VtdEncoding enc = VtdEncoding.fromVtdInt(nav.getEncoding());
+				long attrFragment = VtdFragment.toVtd(attrStart * enc.avgBytesPerChar, (attrEnd - attrStart) * enc.avgBytesPerChar);
+				removeFragmentAndWhitespace(xml, attrFragment);
+			} else if (tokenType == VTDNav.TOKEN_STARTING_TAG) {
+				removeFragmentAndWhitespace(xml, nav.getElementFragment());
+			} else {
+				xml.getMod().remove();
+			}
 		} catch (NavException e) {
 			throw new NavRuntimeException(e);
 		} catch (ModifyException e) {
 			throw new ModifyRuntimeException(e);
 		}
+	}
+
+	private void removeFragmentAndWhitespace(XmlInstance xml, long fragment) throws NavException, ModifyException {
+		/* removing leading whitespace is preferable to trailing whitespace:
+			consider:
+				<root>
+					<a/>
+				</root>
+			remove 'a' with leading whitespace:
+				<root>
+				</root>
+			remove 'a' with trailing whitespace:
+				<root>
+					</root>
+		*/
+		VTDNav nav = xml.getNav();
+		XMLModifier mod = xml.getMod();
+		fragment = nav.expandWhiteSpaces(fragment, VTDNav.WS_LEADING);
+		mod.remove(fragment);
 	}
 }

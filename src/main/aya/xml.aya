@@ -1,17 +1,49 @@
 require stack {stack}
+require ".xpath" {xpath}
 
 class xml
+class xmlns .# same as xml, but with namespace support enabled. This affects how xpath can be evaluated
+::xmlns xml extend;
+
+def xmlns::loads {xml_str::str ignore_whitespace::num xmlns,
+	xml_str ignore_whitespace 1 :(vtd.loads) xmlns!
+}
+
+def xmlns::__repr__ {self,
+	"($(self.xml_id) xmlns!)"
+}
+
+def xmlns::xpath {ns_dict::dict xpath_str::str self : xpath^,
+	self.xml_id ns_dict xpath_str xpath.compile_ns
+}
+
+.{?
+    Same as xml.extract, but with an extra parameter:
+	- ns_dict::dict<str,str> : namespace URIs keyed by their prefix, so that they can be used in xpath expressions.
+.}
+def xmlns::extract { ns_dict::[str]dict query_dict::[[str list]union]dict self_xml -> ::[list]dict,
+	"query_dict" query_dict [{ns_dict\ self_xml.xpath}] self_xml._extract
+}
 
 .{?
     - xml_str : the xml document
     - ignore_whitespace : true = no tokens are constructed for trivial whitespace (pure whitespace between elements)
 .}
 def xml::loads {xml_str::str ignore_whitespace::num xml,
-    xml_str ignore_whitespace :(xml.loads) xml!
+    xml_str ignore_whitespace 0 :(vtd.loads) xml!
 }
 
 def xml::__init__ {xml_id::num self,
     xml_id self.:xml_id;
+}
+
+def xml::__repr__ {self,
+	"($(self.xml_id) xml!)"
+}
+
+.{? Write the loaded xml document to a string (including all modifications).}
+def xml::to_str {self,
+	self.xml_id :(vtd.dumps)
 }
 
 .{?
@@ -20,6 +52,82 @@ def xml::__init__ {xml_id::num self,
 .}
 def xml::minify_xhtml {self,
 	["pre", "textarea", "script", "style"] self.minify
+}
+
+def xml::xpath {xpath_str::str self : xpath^,
+	self.xml_id xpath_str xpath.compile
+}
+
+.{? close this xml document to free up some memory. .}
+def xml::close {self,
+	self.xml_id :(vtd.close)
+}
+
+.{?
+    Returns output_dict::dict<str,list>
+	- query_dict::dict<str,query>
+	  typedef query = xpath::str                      : extracts a list of strings
+	                | [xpath::str]                    : same as above
+					| [xpath::str type::type]          : extract a list and convert to the type denoted by the symbol. May be one of [str char num]
+					| [xpath::str nested::query_dict] : recursively extract each item using the 'nested' query_dict.
+		- xpath is an XPath 1.0 expression
+	
+    The output_dict will receive the same keys as the query_dict.
+	query_dict Examples:
+		ex1. :{"//@attr":x} -> :{[..]:x}
+		ex2. :{["//node/text()" ::num]:y} -> :{[..]:y}
+		ex3. :{[ "//node" :{"text()":inner} ]:outer} -> :{ [.. :{ [..]:inner } ]:outer }
+.}
+def xml::extract { query_dict::[[str list]union]dict self_xml -> ::[list]dict,
+	"query_dict" query_dict [{self_xml.xpath}] self_xml._extract
+}
+
+def xml::_extract {ctx_path query_dict xpath_factory self_xml,
+	query_dict {key query : key_str check_type check_type_type,
+		key :C :key_str;
+		str :check_type;
+		(query list :@) {query str :@!}& {
+			{
+				(query E 1 =) { query.[0]:query; }
+				(query E 2 =) { query.[1]:check_type; query.[0]:query; }
+				{ "illegal length ($(query E)) at $(ctx_path).$(key_str). Must be 1 or 2".D }
+			}:?
+		}?
+		
+		check_type dict :@ {
+			query xpath_factory~~ {token_idx,
+				"$(ctx_path).$(key_str)" check_type xpath_factory self_xml._extract
+			}O
+		}{ : xpath_result,
+			.# extract string, then convert
+			query xpath_factory~~ { self_xml._xpath_item_to_str}O :xpath_result;
+			{
+				(check_type str =) { xpath_result }
+				(check_type char =) {
+					xpath_result {item,
+						item E 1 = {item.[0]}{"type assertion ::char failed at $(ctx_path).$(key_str) for value $(item)".D}.?
+					}O
+				}
+				(check_type num =) {
+					xpath_result {item,
+						item .! :item;
+						item num :@! {"type assertion ::num failed at $(ctx_path).$(key_str) for value $(item)".D}?
+						item
+					}O
+				}
+				{ "illegal type $(check_type) at $(ctx_path).$(key_str). Must be str, char or num".D }
+			}:?
+		}.?
+	}O
+}
+
+def xml::_xpath_item_to_str {token_idx self : token,
+	self.xml_id token_idx :(vtd.get_token) :token;
+	{
+		([::attr_name ::attr_ns] token.type H) { self.xml_id token_idx 1+ :(vtd.token_to_normalized_string) }
+		(::starting_tag token.type =) { self.xml_id :& :(vtd.nav_get_element_fragment) :(vtd.fragment_to_raw_string) }
+		{ self.xml_id token_idx :(vtd.token_to_normalized_string) }
+	}:?
 }
 
 .{?
@@ -173,16 +281,32 @@ def xml::minify {exclude_elements::list self : unclosed_tokens xml_declaration_o
 	Do note that this may still break documents that are making use of the CSS 'white-space' property.
 .}
 def xml::prettify_xhtml {self,
-	1 ["pre", "textarea", "script", "style"] self.prettify
+	:{
+		1:reindent_multiline_text;
+		["pre", "textarea", "script", "style"]:exclude_elements;
+	} self.prettify
 }
 
 .{?
 	Inserts non-significant whitespace into the xml document for printing.
-	- reindent_multiline_text::bool : if true lines of multiline text will be trimmed and indented individually | otherwise (if false) text blocks are kept as is.
-	- exclude_elements::list<str> : list of element names whose content won't be modified.
+	- options::dict {
+		reindent_multiline_text::bool : if true lines of multiline text will be trimmed and indented individually | otherwise (if false) text blocks are kept as is.
+		exclude_elements::list        : list of element names whose content won't be modified.
+		extra_indentation::str        : additional indentation prefixed to every line, with respect to the other options.
+	}
 	Returns the prettified document as a string.
 .}
-def xml::prettify {reindent_multiline_text::num exclude_elements::list self : unclosed_tokens xml_declaration_open xml_tag_open tag_has_multiline_content emit any_emitted is_in_excluded_tag push_token stack^,
+def xml::prettify {options::dict self
+			: reindent_multiline_text exclude_elements extra_indentation
+			  newline
+			  unclosed_tokens xml_declaration_open xml_tag_open tag_has_multiline_content
+			  emit any_emitted is_in_excluded_tag push_token stack^,
+	0:reindent_multiline_text;
+	[]:exclude_elements;
+	"":extra_indentation;
+	options~
+	"\n" extra_indentation + :newline;
+
 	0 :xml_declaration_open;
     0 :xml_tag_open;
 	0 :tag_has_multiline_content;
@@ -282,14 +406,14 @@ def xml::prettify {reindent_multiline_text::num exclude_elements::list self : un
 				while {(token.depth unclosed_tokens E <) {unclosed_tokens E 0 >} &} { : pop_token,
 					unclosed_tokens.pop :pop_token;
 					tag_has_multiline_content {
-						"\n" '\t' pop_token.depth 0 .< L +emit
+						newline '\t' pop_token.depth 0 .< L +emit
 					}{
 						1 :tag_has_multiline_content;
 					}.?
 					"</" pop_token.raw ">" ++emit
 				}
 				any_emitted tag_has_multiline_content & {
-					"\n" '\t' token.depth 0 .< L +emit
+					newline '\t' token.depth 0 .< L +emit
 				}?
 			}?
 
@@ -307,7 +431,7 @@ def xml::prettify {reindent_multiline_text::num exclude_elements::list self : un
 					token.raw.trim
 					reindent_multiline_text {
 						:& '\n' H {
-							"\\s*\\r?\\n\\s*" ("\n" '\t' token.depth L +) .&
+							"\\s*\\r?\\n\\s*" (newline '\t' token.depth L +) .&
 						}?
 					}?
 					emit
@@ -320,12 +444,13 @@ def xml::prettify {reindent_multiline_text::num exclude_elements::list self : un
 				} (token.type ::cdata_val =) {
 					"<![CDATA[" token.raw "]]>" ++emit
 				} (token.type ::dtd_val =) {
-					any_emitted {"\n"}{""}.?
+					any_emitted {newline}{""}.?
 					"<!DOCTYPE" token.raw ">" +++emit
 				}
 			}:?
 		}?
     } O "" % .# partial result on stack...
+	extra_indentation\+
 	
 	is_in_excluded_tag {
 		[emit_fragment] "" % +
@@ -338,7 +463,7 @@ def xml::prettify {reindent_multiline_text::num exclude_elements::list self : un
 		while {unclosed_tokens E 0 >} { : pop_token,
 			unclosed_tokens.pop :pop_token;
 			tag_has_multiline_content {
-				"\n" '\t' pop_token.depth 0 .< L
+				newline '\t' pop_token.depth 0 .< L
 			}{
 				1 :tag_has_multiline_content;
 			}.?

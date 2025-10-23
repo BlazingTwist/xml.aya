@@ -10,7 +10,7 @@ import io.blazingtwist.xml.instances.InstanceType;
 public class VtdXPathEvalStr extends NamedOperator {
 	public VtdXPathEvalStr() {
 		super("vtd.xpath_eval_str", "xpath_id::num -> str :"
-				+ " Evaluate the xpath to a string. This operation may move the cursor.");
+				+ " Evaluate the xpath to a string, relative to the current Nav position.");
 	}
 
 	@Override

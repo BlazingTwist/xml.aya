@@ -1,0 +1,89 @@
+.{ this duplicates a subset of the xml.modify tests but with namespace support in mind .}
+
+require xml {xmlns}
+
+[
+    "<ns1:a xmlns:ns1=\"example:namespace/1\">"
+        "<b xmlns:ns2=\"example:namespace/2\" ns1:x=\"5\" ns2:y=\"6\">"
+            "<ns2:c>1</ns2:c>"
+            "<ns1:c>2</ns1:c>"
+			"<c/>"
+        "</b>"
+        "<b xmlns:ns2=\"example:namespace/3\" ns1:x=\"7\" ns2:y=\"8\">" .# NOTICE: same prefix, but different URI.
+            "<c>3</c>"
+            "<ns2:c>4</ns2:c>"
+			"<ns1:c/>"
+        "</b>"
+    "</ns1:a>"
+] "\n" % :original_xml;
+
+[
+    "<ns1:a xmlns:ns1=\"example:namespace/1\">"
+        "<b xmlns:ns2=\"example:namespace/2\" ns1:x=\"5\" ns2:y=\"6\">"
+			"<c/>"
+        "</b>"
+        "<b xmlns:ns2=\"example:namespace/3\" ns1:x=\"7\" ns2:y=\"8\">"
+            "<c>3</c>"
+            "<ns2:c>4</ns2:c>"
+        "</b>"
+    "</ns1:a>"
+] "\n" % :removed_elements_xml;
+
+[
+    "<ns1:a xmlns:ns1=\"example:namespace/1\">"
+        "<b xmlns:ns2=\"example:namespace/2\" ns2:y=\"6\">"
+            "<ns2:c>1</ns2:c>"
+            "<ns1:c>2</ns1:c>"
+			"<c/>"
+        "</b>"
+        "<b xmlns:ns2=\"example:namespace/3\">"
+            "<c>3</c>"
+            "<ns2:c>4</ns2:c>"
+			"<ns1:c/>"
+        "</b>"
+    "</ns1:a>"
+] "\n" % :removed_attributes_xml;
+
+
+"sanity-check xml.to_str" :P
+	original_xml 1 xmlns.loads :doc;
+	doc.to_str original_xml :!
+	doc.close
+
+:{ .# namespace prefix can be chosen arbitrarily
+	"example:namespace/1":"ex1";
+	"example:namespace/2":"ex2";
+	"example:namespace/3":"ex3";
+}:full_ns_dict;
+:{ .# not all namespaces must be defined, only those queried by the xpath
+	"example:namespace/1":"ex1";
+	"example:namespace/2":"ex2";
+}:partial_ns_dict;
+
+.{
+    Removing Elements / Attributes / Text
+.}
+"test removing elements" :P
+ 	original_xml 1 xmlns.loads :doc;
+ 	full_ns_dict "//ex1:c" doc.xpath { doc.xml_id :(vtd.nav_remove) }O;
+	.# wildcards ARE supported on element names
+ 	partial_ns_dict "//ex2:*" doc.xpath { doc.xml_id :(vtd.nav_remove) }O;
+ 	doc.to_str removed_elements_xml :!
+ 	doc.close
+"test removing attributes" :P
+	original_xml 1 xmlns.loads :doc;
+	.# wildcards are NOT supported on namespace qualified attribute names (XPath 1.0 limitation)
+	partial_ns_dict "//@ex1:x" doc.xpath { doc.xml_id :(vtd.nav_remove) }O;
+	full_ns_dict "//@ex3:y" doc.xpath { doc.xml_id :(vtd.nav_remove) }O;
+	doc.to_str removed_attributes_xml :!
+	doc.close
+
+
+.# detect unexpected operands on stack
+.A :& E :& 0 > {
+	.# stack has leak_stack::list len::num
+	:{}
+	\"Operand leak! There are "\+ " items on the stack. Expected 0"+ \.:["msg"]
+	.:["stack"]
+	.D
+}{;}.?

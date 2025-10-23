@@ -4,8 +4,11 @@ import aya.instruction.named.NamedInstructionStore;
 import aya.instruction.named.NamedOperator;
 import io.blazingtwist.xml.instructions.vtd.VtdAllEncodings;
 import io.blazingtwist.xml.instructions.vtd.VtdAllTokenTypes;
+import io.blazingtwist.xml.instructions.vtd.VtdClose;
+import io.blazingtwist.xml.instructions.vtd.VtdDumpS;
 import io.blazingtwist.xml.instructions.vtd.VtdFragmentExpandWhitespace;
 import io.blazingtwist.xml.instructions.vtd.VtdFragmentRemove;
+import io.blazingtwist.xml.instructions.vtd.VtdFragmentReplace;
 import io.blazingtwist.xml.instructions.vtd.VtdFragmentToRawString;
 import io.blazingtwist.xml.instructions.vtd.VtdFragmentTrimWhitespace;
 import io.blazingtwist.xml.instructions.vtd.VtdGetEncoding;
@@ -13,7 +16,9 @@ import io.blazingtwist.xml.instructions.vtd.VtdGetNestingLevel;
 import io.blazingtwist.xml.instructions.vtd.VtdGetToken;
 import io.blazingtwist.xml.instructions.vtd.VtdGetTokenCount;
 import io.blazingtwist.xml.instructions.vtd.VtdInsertStr;
-import io.blazingtwist.xml.instructions.vtd.VtdNavFindElement;
+import io.blazingtwist.xml.instructions.vtd.VtdLoadF;
+import io.blazingtwist.xml.instructions.vtd.VtdLoadS;
+import io.blazingtwist.xml.instructions.vtd.VtdNavCurrentToken;
 import io.blazingtwist.xml.instructions.vtd.VtdNavFindText;
 import io.blazingtwist.xml.instructions.vtd.VtdNavGetAttrCount;
 import io.blazingtwist.xml.instructions.vtd.VtdNavGetContentFragment;
@@ -37,14 +42,15 @@ import io.blazingtwist.xml.instructions.vtd.VtdTokenRemove;
 import io.blazingtwist.xml.instructions.vtd.VtdTokenReplace;
 import io.blazingtwist.xml.instructions.vtd.VtdTokenToNormalizedString;
 import io.blazingtwist.xml.instructions.vtd.VtdTokenToRawString;
-import io.blazingtwist.xml.instructions.vtd.VtdXPathCompile;
 import io.blazingtwist.xml.instructions.vtd.VtdXPathEvalBool;
 import io.blazingtwist.xml.instructions.vtd.VtdXPathEvalNum;
 import io.blazingtwist.xml.instructions.vtd.VtdXPathEvalStr;
 import io.blazingtwist.xml.instructions.vtd.VtdXPathNext;
 import io.blazingtwist.xml.instructions.vtd.VtdXPathReset;
 import io.blazingtwist.xml.instructions.vtd.xml.VtdNavFindAttrValue;
+import io.blazingtwist.xml.instructions.vtd.xml.VtdXPathCompile;
 import io.blazingtwist.xml.instructions.vtd.xmlns.VtdNavFindAttrValueNs;
+import io.blazingtwist.xml.instructions.vtd.xmlns.VtdXPathCompileNs;
 
 import java.util.Collection;
 import java.util.List;
@@ -57,8 +63,11 @@ public class VtdInstructionStore implements NamedInstructionStore {
 				new VtdNavFindAttrValueNs(),
 				new VtdAllEncodings(),
 				new VtdAllTokenTypes(),
+				new VtdClose(),
+				new VtdDumpS(),
 				new VtdFragmentExpandWhitespace(),
 				new VtdFragmentRemove(),
+				new VtdFragmentReplace(),
 				new VtdFragmentToRawString(),
 				new VtdFragmentTrimWhitespace(),
 				new VtdGetEncoding(),
@@ -66,7 +75,9 @@ public class VtdInstructionStore implements NamedInstructionStore {
 				new VtdGetToken(),
 				new VtdGetTokenCount(),
 				new VtdInsertStr(),
-				new VtdNavFindElement(),
+				new VtdLoadF(),
+				new VtdLoadS(),
+				new VtdNavCurrentToken(),
 				new VtdNavFindText(),
 				new VtdNavGetAttrCount(),
 				new VtdNavGetContentFragment(),
@@ -91,6 +102,7 @@ public class VtdInstructionStore implements NamedInstructionStore {
 				new VtdTokenToNormalizedString(),
 				new VtdTokenToRawString(),
 				new VtdXPathCompile(),
+				new VtdXPathCompileNs(),
 				new VtdXPathEvalBool(),
 				new VtdXPathEvalNum(),
 				new VtdXPathEvalStr(),
