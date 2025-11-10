@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root xmlns="example:xsd/test">
+    <elementTypes>
+        <string><not-a-string/></string>
+        <boolean>123</boolean>
+        <byte>1024</byte>
+        <date>456</date>
+        <dateTime>789</dateTime>
+        <decimal>aa</decimal>
+        <double>ab</double>
+        <duration>ac</duration>
+        <float>ad</float>
+        <gDay>ae</gDay>
+        <gMonth>af</gMonth>
+        <gMonthDay>ag</gMonthDay>
+        <gYear>ah</gYear>
+        <gYearMonth>ai</gYearMonth>
+        <int>aj</int>
+        <integer>ak</integer>
+        <long>al</long>
+        <negativeInteger>1</negativeInteger>
+        <nonNegativeInteger>-2</nonNegativeInteger>
+        <nonPositiveInteger>3</nonPositiveInteger>
+        <positiveInteger>-4</positiveInteger>
+        <short>am</short>
+        <time>an</time>
+        <unsignedByte>-5</unsignedByte>
+        <unsignedInt>-6</unsignedInt>
+        <unsignedLong>-7</unsignedLong>
+        <unsignedShort>-8</unsignedShort>
+    </elementTypes>
+</root>

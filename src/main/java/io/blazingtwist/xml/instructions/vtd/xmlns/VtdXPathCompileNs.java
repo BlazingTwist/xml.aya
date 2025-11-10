@@ -9,7 +9,7 @@ import aya.util.Pair;
 import com.ximpleware.AutoPilot;
 import com.ximpleware.XPathParseException;
 import io.blazingtwist.xml.AyaHelper;
-import io.blazingtwist.xml.exception.XPathParseRuntimeException;
+import io.blazingtwist.xml.exception.WrapperRuntimeException;
 import io.blazingtwist.xml.instances.AutoPilotInstance;
 import io.blazingtwist.xml.instances.InstanceManager;
 import io.blazingtwist.xml.instances.InstanceType;
@@ -38,7 +38,7 @@ public class VtdXPathCompileNs extends NamedOperator {
 			int xPathId = InstanceManager.createInstance(InstanceType.XPath, api);
 			AyaHelper.pushValue(blockEvaluator, xPathId);
 		} catch (XPathParseException e) {
-			throw new XPathParseRuntimeException(e);
+			throw new WrapperRuntimeException(e);
 		}
 	}
 }

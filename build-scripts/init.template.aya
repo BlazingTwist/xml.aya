@@ -1,3 +1,4 @@
 import ".[AYA-XML-JAR]"
 require ".src/xpath" *
 require ".src/xml" *
+require ".src/xsd" *

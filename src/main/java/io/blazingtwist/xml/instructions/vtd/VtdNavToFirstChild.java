@@ -4,7 +4,7 @@ import aya.eval.BlockEvaluator;
 import aya.instruction.named.NamedOperator;
 import com.ximpleware.NavException;
 import com.ximpleware.VTDNav;
-import io.blazingtwist.xml.exception.NavRuntimeException;
+import io.blazingtwist.xml.exception.WrapperRuntimeException;
 import io.blazingtwist.xml.instances.InstanceManager;
 import io.blazingtwist.xml.instances.InstanceType;
 import io.blazingtwist.xml.instances.XmlInstance;
@@ -24,7 +24,7 @@ public class VtdNavToFirstChild extends NamedOperator {
 		try {
 			pushValue(blockEvaluator, xml.getNav().toElement(VTDNav.FIRST_CHILD));
 		} catch (NavException e) {
-			throw new NavRuntimeException(e);
+			throw new WrapperRuntimeException(e);
 		}
 	}
 }

@@ -1,0 +1,176 @@
+<?xml version="1.0"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        xmlns:target="example:xsd/test"
+        targetNamespace="example:xsd/test"
+        elementFormDefault="qualified">
+
+    <complexType name="elementTypes">
+        <sequence>
+            <element name="string" type="string"/>
+            <element name="boolean" type="boolean"/>
+            <element name="byte" type="byte"/>
+            <element name="date" type="date"/>
+            <element name="dateTime" type="dateTime"/>
+            <element name="decimal" type="decimal"/>
+            <element name="double" type="double"/>
+            <element name="duration" type="duration"/>
+            <element name="float" type="float"/>
+            <element name="gDay" type="gDay"/>
+            <element name="gMonth" type="gMonth"/>
+            <element name="gMonthDay" type="gMonthDay"/>
+            <element name="gYear" type="gYear"/>
+            <element name="gYearMonth" type="gYearMonth"/>
+            <element name="int" type="int"/>
+            <element name="integer" type="integer"/>
+            <element name="long" type="long"/>
+            <element name="negativeInteger" type="negativeInteger"/>
+            <element name="nonNegativeInteger" type="nonNegativeInteger"/>
+            <element name="nonPositiveInteger" type="nonPositiveInteger"/>
+            <element name="positiveInteger" type="positiveInteger"/>
+            <element name="short" type="short"/>
+            <element name="time" type="time"/>
+            <element name="unsignedByte" type="unsignedByte"/>
+            <element name="unsignedInt" type="unsignedInt"/>
+            <element name="unsignedLong" type="unsignedLong"/>
+            <element name="unsignedShort" type="unsignedShort"/>
+        </sequence>
+    </complexType>
+
+    <complexType name="attributes">
+        <attribute name="int" type="int"/>
+        <attribute name="intRequired" type="int" use="required"/>
+        <attribute name="intDefault" type="int" default="12"/>
+        <attribute name="intFixed" type="int" fixed="34" use="required"/>
+        <attribute name="intProhibited" type="int" use="prohibited"/>
+    </complexType>
+
+    <complexType name="restrictions">
+        <sequence>
+            <element name="intRange">
+                <simpleType>
+                    <restriction base="int">
+                        <minInclusive value="0"/>
+                        <maxExclusive value="100"/>
+                    </restriction>
+                </simpleType>
+            </element>
+            <element name="strEnum">
+                <simpleType>
+                    <restriction base="string">
+                        <enumeration value="aaa"/>
+                        <enumeration value="bbb"/>
+                    </restriction>
+                </simpleType>
+            </element>
+            <element name="intPattern">
+                <simpleType>
+                    <restriction base="int">
+                        <pattern value="[0-5]{2,3}|[6-9]"/>
+                    </restriction>
+                </simpleType>
+            </element>
+            <element name="strLength">
+                <simpleType>
+                    <restriction base="string">
+                        <minLength value="2"/>
+                        <maxLength value="4"/>
+                    </restriction>
+                </simpleType>
+            </element>
+            <element name="floatPrecision">
+                <simpleType>
+                    <restriction base="decimal">
+                        <fractionDigits value="2"/>
+                    </restriction>
+                </simpleType>
+            </element>
+        </sequence>
+    </complexType>
+
+    <complexType name="complexAll">
+        <all>
+            <element name="first" type="string"/>
+            <element name="second" type="int"/>
+        </all>
+    </complexType>
+
+    <complexType name="complexChoice">
+        <choice>
+            <element name="first" type="string" minOccurs="0"/>
+            <element name="second" type="int" maxOccurs="2"/>
+        </choice>
+    </complexType>
+
+    <group name="numericPair">
+        <sequence>
+            <choice minOccurs="2" maxOccurs="2">
+                <element name="int" type="int"/>
+                <element name="long" type="long"/>
+                <element name="float" type="float"/>
+                <element name="double" type="double"/>
+            </choice>
+        </sequence>
+    </group>
+
+    <complexType name="complexAny">
+        <sequence>
+            <group ref="target:numericPair"/>
+            <any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+        </sequence>
+    </complexType>
+
+    <element name="substitutable" type="string"/>
+    <element name="deargodpleasedontusethisforlocalization" substitutionGroup="target:substitutable"/>
+
+    <complexType name="complexSubstitution">
+        <choice>
+            <element name="enabled">
+                <complexType>
+                    <sequence>
+                        <element ref="target:substitutable"/>
+                    </sequence>
+                </complexType>
+            </element>
+            <element name="disabled">
+                <complexType>
+                    <sequence>
+                        <element name="substitutable" type="string"/>
+                    </sequence>
+                </complexType>
+            </element>
+        </choice>
+    </complexType>
+
+    <complexType name="complexRestriction">
+        <choice>
+            <element name="enabled">
+                <simpleType>
+                    <restriction base="string">
+                        <minLength value="2"/>
+                    </restriction>
+                </simpleType>
+            </element>
+            <element name="disabled">
+                <simpleType>
+                    <restriction base="string"/>
+                </simpleType>
+            </element>
+        </choice>
+    </complexType>
+
+    <element name="root">
+        <complexType>
+            <choice maxOccurs="unbounded">
+                <element name="elementTypes" type="target:elementTypes"/>
+                <element name="attributes" type="target:attributes"/>
+                <element name="restrictions" type="target:restrictions"/>
+                <element name="complexAll" type="target:complexAll"/>
+                <element name="complexChoice" type="target:complexChoice"/>
+                <element name="complexAny" type="target:complexAny"/>
+                <element name="complexSubstitution" type="target:complexSubstitution"/>
+                <element name="complexRestriction" type="target:complexRestriction"/>
+            </choice>
+        </complexType>
+    </element>
+
+</schema>

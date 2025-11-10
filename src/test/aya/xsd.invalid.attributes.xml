@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root xmlns="example:xsd/test">
+    <attributes intRequired="aa" int="456" intDefault="101" intFixed="34"/>
+    <attributes intRequired="123" int="ab" intDefault="101" intFixed="34"/>
+    <attributes intRequired="123" int="456" intDefault="ac" intFixed="34"/>
+    <attributes intRequired="123" int="456" intDefault="101" intFixed="ad"/>
+    <attributes intRequired="123" int="456" intDefault="101" intFixed="123"/>
+</root>

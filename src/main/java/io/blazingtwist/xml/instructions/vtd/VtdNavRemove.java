@@ -8,8 +8,7 @@ import com.ximpleware.VTDNav;
 import com.ximpleware.XMLModifier;
 import io.blazingtwist.xml.compat.VtdEncoding;
 import io.blazingtwist.xml.compat.VtdFragment;
-import io.blazingtwist.xml.exception.ModifyRuntimeException;
-import io.blazingtwist.xml.exception.NavRuntimeException;
+import io.blazingtwist.xml.exception.WrapperRuntimeException;
 import io.blazingtwist.xml.instances.InstanceManager;
 import io.blazingtwist.xml.instances.InstanceType;
 import io.blazingtwist.xml.instances.XmlInstance;
@@ -44,10 +43,8 @@ public class VtdNavRemove extends NamedOperator {
 			} else {
 				xml.getMod().remove();
 			}
-		} catch (NavException e) {
-			throw new NavRuntimeException(e);
-		} catch (ModifyException e) {
-			throw new ModifyRuntimeException(e);
+		} catch (Exception e) {
+			throw new WrapperRuntimeException(e);
 		}
 	}
 

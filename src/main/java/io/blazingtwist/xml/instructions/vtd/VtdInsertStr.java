@@ -5,7 +5,7 @@ import aya.instruction.named.NamedOperator;
 import com.ximpleware.ModifyException;
 import io.blazingtwist.xml.AyaHelper;
 import io.blazingtwist.xml.compat.VtdEncoding;
-import io.blazingtwist.xml.exception.ModifyRuntimeException;
+import io.blazingtwist.xml.exception.WrapperRuntimeException;
 import io.blazingtwist.xml.instances.InstanceManager;
 import io.blazingtwist.xml.instances.InstanceType;
 import io.blazingtwist.xml.instances.XmlInstance;
@@ -27,7 +27,7 @@ public class VtdInsertStr extends NamedOperator {
 		try {
 			xml.getMod().insertBytesAt(offset, textBytes);
 		} catch (ModifyException e) {
-			throw new ModifyRuntimeException(e);
+			throw new WrapperRuntimeException(e);
 		}
 	}
 }

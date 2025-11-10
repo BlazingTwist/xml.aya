@@ -2,15 +2,11 @@ package io.blazingtwist.xml.instructions.vtd;
 
 import aya.eval.BlockEvaluator;
 import aya.instruction.named.NamedOperator;
-import com.ximpleware.ModifyException;
 import io.blazingtwist.xml.AyaHelper;
-import io.blazingtwist.xml.exception.ModifyRuntimeException;
-import io.blazingtwist.xml.exception.UnsupportedEncodingRuntimeException;
+import io.blazingtwist.xml.exception.WrapperRuntimeException;
 import io.blazingtwist.xml.instances.InstanceManager;
 import io.blazingtwist.xml.instances.InstanceType;
 import io.blazingtwist.xml.instances.XmlInstance;
-
-import java.io.UnsupportedEncodingException;
 
 public class VtdNavInsertBeforeElement extends NamedOperator {
 	public VtdNavInsertBeforeElement() {
@@ -25,10 +21,8 @@ public class VtdNavInsertBeforeElement extends NamedOperator {
 
 		try {
 			xml.getMod().insertBeforeElement(text);
-		} catch (ModifyException e) {
-			throw new ModifyRuntimeException(e);
-		} catch (UnsupportedEncodingException e) {
-			throw new UnsupportedEncodingRuntimeException(e);
+		} catch (Exception e) {
+			throw new WrapperRuntimeException(e);
 		}
 	}
 }

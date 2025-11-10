@@ -2,9 +2,8 @@ package io.blazingtwist.xml.instructions.vtd.xmlns;
 
 import aya.eval.BlockEvaluator;
 import aya.instruction.named.NamedOperator;
-import com.ximpleware.NavException;
 import io.blazingtwist.xml.AyaHelper;
-import io.blazingtwist.xml.exception.NavRuntimeException;
+import io.blazingtwist.xml.exception.WrapperRuntimeException;
 import io.blazingtwist.xml.instances.InstanceManager;
 import io.blazingtwist.xml.instances.InstanceType;
 import io.blazingtwist.xml.instances.XmlnsInstance;
@@ -25,8 +24,8 @@ public class VtdNavFindAttrValueNs extends NamedOperator {
 		XmlnsInstance xml = InstanceManager.popInstance(this, blockEvaluator, InstanceType.Xmlns);
 		try {
 			pushValue(blockEvaluator, xml.getNav().getAttrValNS(namespace, attrName));
-		} catch (NavException e) {
-			throw new NavRuntimeException(e);
+		} catch (Exception e) {
+			throw new WrapperRuntimeException(e);
 		}
 	}
 }

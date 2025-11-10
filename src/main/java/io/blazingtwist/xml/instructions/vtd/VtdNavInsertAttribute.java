@@ -8,7 +8,7 @@ import com.ximpleware.XMLModifier;
 import io.blazingtwist.xml.AyaHelper;
 import io.blazingtwist.xml.compat.VtdEncoding;
 import io.blazingtwist.xml.compat.VtdTokenType;
-import io.blazingtwist.xml.exception.ModifyRuntimeException;
+import io.blazingtwist.xml.exception.WrapperRuntimeException;
 import io.blazingtwist.xml.instances.InstanceManager;
 import io.blazingtwist.xml.instances.InstanceType;
 import io.blazingtwist.xml.instances.XmlInstance;
@@ -50,7 +50,7 @@ public class VtdNavInsertAttribute extends NamedOperator {
 					throw new ModifyException("The current token type (" + tokenType.name() + ")is not valid for " + this._name);
 			}
 		} catch (ModifyException e) {
-			throw new ModifyRuntimeException(e);
+			throw new WrapperRuntimeException(e);
 		}
 	}
 

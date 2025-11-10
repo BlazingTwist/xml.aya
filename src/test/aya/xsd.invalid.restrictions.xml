@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root xmlns="example:xsd/test">
+    <restrictions>
+        <intRange>125</intRange>
+        <strEnum>ccc</strEnum>
+        <intPattern>126</intPattern>
+        <strLength>aaaar</strLength>
+        <floatPrecision>1.2345</floatPrecision>
+    </restrictions>
+</root>

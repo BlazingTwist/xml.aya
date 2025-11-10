@@ -5,8 +5,20 @@ class xml
 class xmlns .# same as xml, but with namespace support enabled. This affects how xpath can be evaluated
 ::xmlns xml extend;
 
+.{? Loads an xml document with namespace support.
+    - xml_str : the xml document
+    - ignore_whitespace : true = no tokens are constructed for trivial whitespace (pure whitespace between elements)
+.}
 def xmlns::loads {xml_str::str ignore_whitespace::num xmlns,
 	xml_str ignore_whitespace 1 :(vtd.loads) xmlns!
+}
+
+.{? Loads an xml document with namespace support.
+    - xml_file : the path of the xml document
+    - ignore_whitespace : true = no tokens are constructed for trivial whitespace (pure whitespace between elements)
+.}
+def xmlns::loadf {xml_file::str ignore_whitespace::num xmlns,
+	xml_file ignore_whitespace 1 :(vtd.loadf) xmlns!
 }
 
 def xmlns::__repr__ {self,
@@ -31,6 +43,14 @@ def xmlns::extract { ns_dict::[str]dict query_dict::[[str list]union]dict self_x
 .}
 def xml::loads {xml_str::str ignore_whitespace::num xml,
     xml_str ignore_whitespace 0 :(vtd.loads) xml!
+}
+
+.{?
+    - xml_file : the path of the xml document
+    - ignore_whitespace : true = no tokens are constructed for trivial whitespace (pure whitespace between elements)
+.}
+def xml::loadf {xml_file::str ignore_whitespace::num xml,
+    xml_file ignore_whitespace 0 :(vtd.loadf) xml!
 }
 
 def xml::__init__ {xml_id::num self,

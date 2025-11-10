@@ -6,8 +6,11 @@ import aya.instruction.named.NamedOperator;
 import aya.obj.Obj;
 import aya.obj.dict.Dict;
 import aya.obj.list.List;
+import aya.obj.list.ListCollector;
 import aya.obj.number.Num;
 import aya.util.Casting;
+
+import java.util.Collection;
 
 public class AyaHelper {
 	public static int popInt(NamedOperator inst, BlockEvaluator blockEvaluator) {
@@ -54,5 +57,9 @@ public class AyaHelper {
 
 	public static void pushValue(BlockEvaluator blockEvaluator, boolean value) {
 		blockEvaluator.push(new Num(value ? 1 : 0));
+	}
+
+	public static <T extends Obj> void pushValue(BlockEvaluator blockEvaluator, Collection<T> objList) {
+		blockEvaluator.push(objList.stream().collect(new ListCollector()));
 	}
 }

@@ -4,7 +4,7 @@ import aya.eval.BlockEvaluator;
 import aya.instruction.named.NamedOperator;
 import com.ximpleware.ModifyException;
 import io.blazingtwist.xml.AyaHelper;
-import io.blazingtwist.xml.exception.ModifyRuntimeException;
+import io.blazingtwist.xml.exception.WrapperRuntimeException;
 import io.blazingtwist.xml.instances.InstanceManager;
 import io.blazingtwist.xml.instances.InstanceType;
 import io.blazingtwist.xml.instances.XmlInstance;
@@ -24,7 +24,7 @@ public class VtdTokenRemove extends NamedOperator {
 		try {
 			xml.getMod().removeToken(tokenIdx);
 		} catch (ModifyException e) {
-			throw new ModifyRuntimeException(e);
+			throw new WrapperRuntimeException(e);
 		}
 	}
 }

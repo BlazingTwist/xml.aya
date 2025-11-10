@@ -1,0 +1,99 @@
+require xml {xml xsd}
+
+"$(:(sys.ad))/pkg/xml.aya/test" :test_dir;
+
+"Test validating a valid xml document using XSD 1.0" :P
+	"$(test_dir)/xsd.valid.xml" 1 xml.loadf :document;
+	"$(test_dir)/xsd.validate.xsd" xsd.loadf :validator;
+	(document validator.validate) [] :!
+	document.close
+	validator.close
+
+{value_keys_pairs::[list]list -> vkpd::[num]dict : result,
+	:{} :result;
+	value_keys_pairs {pair,
+		pair.[0] :value;
+		pair.[1] :keys;
+		keys :T list = {
+			keys {key,
+				value result.:[key P];
+			}O;
+		}{
+			value result.:[keys P];
+		}.?
+	}O;
+	result
+}:vkp_to_dict;
+
+{_validator::xsd xml_name::str expected_num_errors_by_line::[num]dict : _document err_list_by_line failure_messages,
+	:{}:err_list_by_line;
+	[]:failure_messages;
+
+	"  Test $(xml_name)" :P
+	"$(test_dir)/$(xml_name)" 1 xml.loadf :_document;
+	(_document _validator.validate) {err : ln_key,
+		err.line_number P :ln_key;
+		err_list_by_line ln_key H ! {
+			[] err_list_by_line.:[ln_key];
+		}?
+		err err_list_by_line.[ln_key] .B;
+	}O;
+	err_list_by_line :K expected_num_errors_by_line :K :| {extra_err_key,
+		err_list_by_line.[extra_err_key]{extra_err,
+			"extra error: $(extra_err xsd.error_to_str)" failure_messages .B;
+		}O;
+	}O;
+	expected_num_errors_by_line :K err_list_by_line :K :| {missing_err_key : num_exp,
+		expected_num_errors_by_line.[missing_err_key] :num_exp;
+		"missing $(num_exp) error(s) on line $(missing_err_key :C)" failure_messages .B;
+	}O;
+	expected_num_errors_by_line :K err_list_by_line :K :^ {shared_err_key : num_exp actual_err_list err_text,
+		expected_num_errors_by_line.[shared_err_key] :num_exp;
+		err_list_by_line.[shared_err_key] :actual_err_list;
+		num_exp actual_err_list E =! {
+			actual_err_list {xsd.error_to_str}O"\n\t\t"% :err_text;
+			"expected $(num_exp) errors on line $(shared_err_key :C) but found $(actual_err_list E) :\n\t\t$(err_text)" failure_messages .B;
+		}?
+	}O;
+	failure_messages E 0 > {
+		["." failure_messages~] "\n\t" % .D
+	}?
+	
+	_document.close
+}:test_invalid_xsd;
+
+"Test validating an invalid xml document using XSD 1.0" :P
+	"$(test_dir)/xsd.validate.xsd" xsd.loadf :validator;
+
+	validator "xsd.invalid.elementTypes.xml" [
+		[1 4]
+		[2 [5 30]R]
+	] vkp_to_dict test_invalid_xsd
+	validator "xsd.invalid.attributes.xml" [
+		[2 [3 6]R]
+		[1 7]
+	] vkp_to_dict test_invalid_xsd
+	validator "xsd.invalid.restrictions.xml" [
+		[2 [4 8]R]
+	] vkp_to_dict test_invalid_xsd
+	validator "xsd.invalid.complexTypes.xml" [
+		[1 5]
+		[1 8]
+		[1 13]
+		[1 17]
+		[1 19]
+		[1 25]
+		[2 29]
+	] vkp_to_dict test_invalid_xsd
+	
+	validator.close
+
+
+.# detect unexpected operands on stack
+.A :& E :& 0 > {
+	.# stack has leak_stack::list len::num
+	:{}
+	\"Operand leak! There are "\+ " items on the stack. Expected 0"+ \.:["msg"]
+	.:["stack"]
+	.D
+}{;}.?

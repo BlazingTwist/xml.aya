@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root xmlns="example:xsd/test">
+    <complexAll>
+        <first>str</first>
+    </complexAll>
+    <complexChoice>
+        <first>foo</first>
+        <second>123</second>
+    </complexChoice>
+    <complexChoice>
+        <second>1</second>
+        <second>2</second>
+        <second>3</second>
+    </complexChoice>
+    <complexAny><!-- minOccurs not satisfied -->
+        <int>12</int>
+    </complexAny>
+    <complexAny><!-- sequence, wrong order -->
+        <ex1:something xmlns:ex1="ex:/1">else</ex1:something>
+        <int>12</int>
+        <int>34</int>
+    </complexAny>
+    <complexSubstitution>
+        <disabled>
+            <deargodpleasedontusethisforlocalization>ok</deargodpleasedontusethisforlocalization>
+        </disabled>
+    </complexSubstitution>
+    <complexRestriction>
+        <enabled>a</enabled>
+    </complexRestriction>
+</root>

@@ -3,11 +3,8 @@ package io.blazingtwist.xml.instructions.vtd;
 import aya.eval.BlockEvaluator;
 import aya.exceptions.runtime.IOError;
 import aya.instruction.named.NamedOperator;
-import com.ximpleware.ModifyException;
-import com.ximpleware.TranscodeException;
 import io.blazingtwist.xml.AyaHelper;
-import io.blazingtwist.xml.exception.ModifyRuntimeException;
-import io.blazingtwist.xml.exception.TranscodeRuntimeException;
+import io.blazingtwist.xml.exception.WrapperRuntimeException;
 import io.blazingtwist.xml.instances.InstanceManager;
 import io.blazingtwist.xml.instances.InstanceType;
 import io.blazingtwist.xml.instances.XmlInstance;
@@ -31,10 +28,8 @@ public class VtdDumpS extends NamedOperator {
 			AyaHelper.pushValue(blockEvaluator, bao.toString(Charset.defaultCharset()));
 		} catch (IOException e) {
 			throw new IOError(opName(), "xml/ns", e);
-		} catch (ModifyException e) {
-			throw new ModifyRuntimeException(e);
-		} catch (TranscodeException e) {
-			throw new TranscodeRuntimeException(e);
+		} catch (Exception e) {
+			throw new WrapperRuntimeException(e);
 		}
 	}
 }
