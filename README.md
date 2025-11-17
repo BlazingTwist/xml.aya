@@ -20,7 +20,7 @@ require xml {xml xmlns xpath xsd}
 ```
 
 This indicates that you want to import the symbols (`xml`, `xmlns`, `xpath` and `xsd`) from the `xml` name (which resolves to pkg/xml.aya).  
-Naturally, you may omit symbols that you don't need, or import all symbols using `require xml {*}`.
+Naturally, you may omit symbols that you don't need, or import all symbols using `require xml *`.
 
 For basic usage, you can check out the test-cases:
 - [Formatting XML (and XHTML)](./src/test/aya/xml.formatter.aya)  

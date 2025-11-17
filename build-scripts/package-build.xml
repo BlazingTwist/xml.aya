@@ -18,9 +18,9 @@
         <basename property="fat.jar.name" file="${fat.jar}"/>
         <property name="init.aya" location="${build-dir}/init.aya"/>
         <property name="package.json" location="${build-dir}/package.json"/>
-        
+
         <copy file="${fat.jar}" todir="${build-dir}" overwrite="true"/>
-        
+
         <copy file="${scripts.dir}/init.template.aya" tofile="${init.aya}" overwrite="true"/>
         <replace file="${init.aya}" token="[AYA-XML-JAR]" value="${fat.jar.name}" failonnoreplacements="true"/>
 
@@ -28,26 +28,29 @@
         <replace file="${package.json}" token="[VERSION]" value="${version}" failonnoreplacements="true"/>
 
         <zip destfile="${build-dir}/${fat.jar.name}.zip">
-            <union>
-                <file file="${init.aya}"/>
-                <file file="${fat.jar}"/>
-                <file file="${package.json}"/>
-                <fileset dir="${root.dir}">
-                    <include name="README.md"/>
-                </fileset>
-                <mappedresources>
-                    <fileset dir="${root.dir}/src/main/aya">
-                        <include name="**/*"/>
+            <mappedresources>
+                <union>
+                    <file file="${init.aya}"/>
+                    <file file="${fat.jar}"/>
+                    <file file="${package.json}"/>
+                    <fileset dir="${root.dir}">
+                        <include name="README.md"/>
                     </fileset>
-                    <globmapper from="*" to="src/*"/>
-                </mappedresources>
-                <mappedresources>
-                    <fileset dir="${root.dir}/src/test/aya">
-                        <include name="**/*"/>
-                    </fileset>
-                    <globmapper from="*" to="test/*"/>
-                </mappedresources>
-            </union>
+                    <mappedresources>
+                        <fileset dir="${root.dir}/src/main/aya">
+                            <include name="**/*"/>
+                        </fileset>
+                        <globmapper from="*" to="src/*"/>
+                    </mappedresources>
+                    <mappedresources>
+                        <fileset dir="${root.dir}/src/test/aya">
+                            <include name="**/*"/>
+                        </fileset>
+                        <globmapper from="*" to="test/*"/>
+                    </mappedresources>
+                </union>
+                <globmapper from="*" to="xml.aya/*"/>
+            </mappedresources>
         </zip>
     </target>
 </project>

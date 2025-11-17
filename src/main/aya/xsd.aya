@@ -2,27 +2,36 @@ require ".xml" {xml}
 
 class xsd
 
-.{? Load an xsd document from a string .}
+.{? xsd::loads {xsd_str::str self -> instance::xsd}
+    Load an xsd document from a string
+.}
 def xsd::loads {xsd_str::str self -> instance::xsd,
 	self! :& xsd_str\.adds
 }
 
-.{? Add an xsd document from a string to this XSD collection .}
+.{? xsd::adds {xsd_str::str self}
+    Add an xsd document from a string to this XSD collection
+.}
 def xsd::adds {xsd_str::str self,
 	self.xsd_id xsd_str :(xsd.adds)
 }
 
-.{? Load an xsd document from a file .}
+.{? xsd::loadf {xsd_file::str self -> instance::xsd}
+    Load an xsd document from a file
+.}
 def xsd::loadf {xsd_file::str self -> instance::xsd,
 	self! :& xsd_file\.addf
 }
 
-.{? Add an xsd document from a file to this XSD collection .}
+.{? xsd::addf {xsd_file::str self}
+    Add an xsd document from a file to this XSD collection
+.}
 def xsd::addf {xsd_file::str self,
 	self.xsd_id xsd_file :(xsd.addf)
 }
 
-.{? Validate the given xml document.
+.{? xsd::validate {xml_doc::xml self -> errors::[dict]list}
+    Validate the given xml document.
 	Returns a list of error::dict :{
 		::num :line_number;		.# line_number in the xml document
 		::num :column_number;	.# column_number in the xml document
@@ -34,16 +43,22 @@ def xsd::validate {xml_doc::xml self -> errors::[dict]list,
 	self.xsd_id xml_doc.xml_id :(xsd.validate)
 }
 
-.{? Converts an error dict (see xsd::validate) to a String message .}
+.{? xsd::error_to_str {error::dict self -> text::str}
+    Converts an error dict (see xsd::validate) to a String message
+.}
 def xsd::error_to_str {error::dict self -> text::str,
 	"$(error.severity :C) at line $(error.line_number), column $(error.column_number) : $(error.message)"
 }
 
+.{? xsd::from_xsd_id {xsd_id::num self -> instance::xsd}
+    Construct an xsd instance from an id that was obtained by using the (xsd.*) instructions.
+.}
 def xsd::from_xsd_id {xsd_id::num self -> instance::xsd,
 	xsd_id ::skip_xsd_new self!
 }
 
-.{? Initializes an XSD document, or a collection of XSD documents
+.{? xsd::__init__ {self -> instance::xsd}
+    Initializes an XSD document, or a collection of XSD documents
 	Optionally accepts 2 hidden arguments, (xsd_id::str ::skip_xsd_new)
 	  which can be used if you bypassed the normal xsd initialization by using :(xsd.new) directly.
 .}
@@ -60,7 +75,10 @@ def xsd::__repr__ {self,
 	"($(self.xsd_id) ::skip_xsd_new xsd!)"
 }
 
-.{? close this xsd document / collection to free up some memory. .}
+.{? xsd::close {self}
+    ::xsd ->
+    close this xsd document / collection to free up some memory.
+.}
 def xsd::close {self,
 	self.xsd_id :(xsd.close)
 }

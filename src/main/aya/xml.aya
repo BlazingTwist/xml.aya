@@ -5,7 +5,8 @@ class xml
 class xmlns .# same as xml, but with namespace support enabled. This affects how xpath can be evaluated
 ::xmlns xml extend;
 
-.{? Loads an xml document with namespace support.
+.{? xmlns::loads {xml_str::str ignore_whitespace::num xmlns}
+    Loads an xml document with namespace support.
     - xml_str : the xml document
     - ignore_whitespace : true = no tokens are constructed for trivial whitespace (pure whitespace between elements)
 .}
@@ -13,7 +14,8 @@ def xmlns::loads {xml_str::str ignore_whitespace::num xmlns,
 	xml_str ignore_whitespace 1 :(vtd.loads) xmlns!
 }
 
-.{? Loads an xml document with namespace support.
+.{? xmlns::loadf {xml_file::str ignore_whitespace::num xmlns}
+    Loads an xml document with namespace support.
     - xml_file : the path of the xml document
     - ignore_whitespace : true = no tokens are constructed for trivial whitespace (pure whitespace between elements)
 .}
@@ -25,19 +27,23 @@ def xmlns::__repr__ {self,
 	"($(self.xml_id) xmlns!)"
 }
 
+.{? xmlns::xpath {ns_dict::dict xpath_str::str self}
+    Compile an xpath expression for use with this xml document.
+    - ns_dict::dict<str,str> : namespace URIs keyed by their prefix, e.g. :{"my/ns/uri":mnu} can then be used in an xpath like this: '//mnu:node'
+.}
 def xmlns::xpath {ns_dict::dict xpath_str::str self : xpath^,
 	self.xml_id ns_dict xpath_str xpath.compile_ns
 }
 
-.{?
+.{? xmlns::extract {ns_dict::[str]dict query_dict::[[str list]union]dict self_xml -> ::[list]dict}
     Same as xml.extract, but with an extra parameter:
 	- ns_dict::dict<str,str> : namespace URIs keyed by their prefix, so that they can be used in xpath expressions.
 .}
-def xmlns::extract { ns_dict::[str]dict query_dict::[[str list]union]dict self_xml -> ::[list]dict,
+def xmlns::extract {ns_dict::[str]dict query_dict::[[str list]union]dict self_xml -> ::[list]dict,
 	"query_dict" query_dict [{ns_dict\ self_xml.xpath}] self_xml._extract
 }
 
-.{?
+.{? xml::loads {xml_str::str ignore_whitespace::num xml}
     - xml_str : the xml document
     - ignore_whitespace : true = no tokens are constructed for trivial whitespace (pure whitespace between elements)
 .}
@@ -45,7 +51,7 @@ def xml::loads {xml_str::str ignore_whitespace::num xml,
     xml_str ignore_whitespace 0 :(vtd.loads) xml!
 }
 
-.{?
+.{? xml::loadf {xml_file::str ignore_whitespace::num xml}
     - xml_file : the path of the xml document
     - ignore_whitespace : true = no tokens are constructed for trivial whitespace (pure whitespace between elements)
 .}
@@ -61,12 +67,14 @@ def xml::__repr__ {self,
 	"($(self.xml_id) xml!)"
 }
 
-.{? Write the loaded xml document to a string (including all modifications).}
+.{? xml::to_str {self -> ::str}
+    Write the loaded xml document to a string (including all modifications)
+.}
 def xml::to_str {self,
 	self.xml_id :(vtd.dumps)
 }
 
-.{?
+.{? xml::minify_xhtml {self -> ::str}
 	Same as xml::minify, but with a special 'exclude_elements' preset for XHTML files: ["pre", "textarea", "script", "style"]
 	Do note that this may still break documents that are making use of the CSS 'white-space' property.
 .}
@@ -74,16 +82,21 @@ def xml::minify_xhtml {self,
 	["pre", "textarea", "script", "style"] self.minify
 }
 
+.{? xml::xpath {xpath_str::str self -> ::xpath}
+    Compile an xpath expression for use with this xml document.
+.}
 def xml::xpath {xpath_str::str self : xpath^,
 	self.xml_id xpath_str xpath.compile
 }
 
-.{? close this xml document to free up some memory. .}
+.{? xml::close {self}
+    close this xml document to free up some memory.
+.}
 def xml::close {self,
 	self.xml_id :(vtd.close)
 }
 
-.{?
+.{? xml::extract {query_dict::[[str list]union]dict self_xml -> ::[list]dict}
     Returns output_dict::dict<str,list>
 	- query_dict::dict<str,query>
 	  typedef query = xpath::str                      : extracts a list of strings
@@ -98,7 +111,7 @@ def xml::close {self,
 		ex2. :{["//node/text()" ::num]:y} -> :{[..]:y}
 		ex3. :{[ "//node" :{"text()":inner} ]:outer} -> :{ [.. :{ [..]:inner } ]:outer }
 .}
-def xml::extract { query_dict::[[str list]union]dict self_xml -> ::[list]dict,
+def xml::extract {query_dict::[[str list]union]dict self_xml -> ::[list]dict,
 	"query_dict" query_dict [{self_xml.xpath}] self_xml._extract
 }
 
@@ -150,7 +163,7 @@ def xml::_xpath_item_to_str {token_idx self : token,
 	}:?
 }
 
-.{?
+.{? xml::minify {exclude_elements::list self -> ::str}
     Remove all non-significant whitespace from the xml document.
     - exclude_elements::list<str> : list of element names whose content won't be modified.
     Returns the minified document as a string.
@@ -296,7 +309,7 @@ def xml::minify {exclude_elements::list self : unclosed_tokens xml_declaration_o
     ] "" % +
 }
 
-.{?
+.{? xml::prettify_xhtml {self -> ::str}
 	Same as xml::prettify, but with a special 'exclude_elements' preset for XHTML files: ["pre", "textarea", "script", "style"]
 	Do note that this may still break documents that are making use of the CSS 'white-space' property.
 .}
@@ -307,7 +320,7 @@ def xml::prettify_xhtml {self,
 	} self.prettify
 }
 
-.{?
+.{? xml::prettify {options::dict self -> ::str}
 	Inserts non-significant whitespace into the xml document for printing.
 	- options::dict {
 		reindent_multiline_text::bool : if true lines of multiline text will be trimmed and indented individually | otherwise (if false) text blocks are kept as is.
