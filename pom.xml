@@ -90,12 +90,12 @@
                 </executions>
             </plugin>
 
-            <!-- package fat JAR into a package.zip -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
+                    <!-- package fat JAR into a package.zip -->
                     <execution>
                         <id>package-zip</id>
                         <phase>package</phase>
@@ -111,6 +111,7 @@
                             </target>
                         </configuration>
                     </execution>
+                    <!-- execute the tests in package.zip -->
                     <execution>
                         <id>run-aya-tests</id>
                         <phase>verify</phase>
