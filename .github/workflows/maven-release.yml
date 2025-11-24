@@ -30,13 +30,22 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
-          cache: maven
+      - name: Cache/Restore maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: m2-
       - name: build and install aya
         working-directory: aya
         run: mvn install --batch-mode
       - name: Run install phase
         working-directory: main
         run: mvn install --batch-mode
+      - name: Print Folder Tree
+        uses: jaywcjlove/github-action-folder-tree@main
+        with:
+          path: './main'
       - name: Publish the artifact
         uses: actions/upload-artifact@v4
         with:
