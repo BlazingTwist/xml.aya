@@ -64,7 +64,7 @@
                     <jvmarg value="-Duser.country=US"/>
                     <arg value="${test.dir}"/>
                     <arg value="-e"/>
-                    <arg value="import pkg \&quot;xml.aya\&quot; pkg.test"/>
+                    <arg value="import pkg &quot;xml.aya&quot; pkg.test"/>
                 </java>
                 <!-- if the test did not fail, repeat the error logs to the console -->
                 <echo level="error" message="${error.log.str}"/>
