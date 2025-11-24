@@ -41,7 +41,7 @@
         <delete dir="${test.dir}" failonerror="false"/>
         <mkdir dir="${test.dir}/pkg/xml.aya"/>
         <move file="${aya.jar}" todir="${test.dir}"/>
-        <unzip src="${xml.aya.zip}" dest="${test.dir}/pkg/xml.aya"/>
+        <unzip src="${xml.aya.zip}" dest="${test.dir}/pkg"/>
         <unzip src="${aya.runtime.zip}" dest="${test.dir}"/>
 
         <path id="cp.aya">
@@ -64,7 +64,7 @@
                     <jvmarg value="-Duser.country=US"/>
                     <arg value="${test.dir}"/>
                     <arg value="-e"/>
-                    <arg value="import pkg &quot;xml.aya&quot; pkg.test"/>
+                    <arg value='import pkg ""xml.aya"" pkg.test'/>
                 </java>
                 <!-- if the test did not fail, repeat the error logs to the console -->
                 <echo level="error" message="${error.log.str}"/>
