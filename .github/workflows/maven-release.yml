@@ -17,17 +17,27 @@ jobs:
       checks: write
       contents: read
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          path: main
+      - uses: actions/checkout@v4
+        with:
+          repository: aya-lang/aya
+          path: aya
       - name: Set up JDK 11
         uses: actions/setup-java@v3
         with:
           java-version: '11'
           distribution: 'temurin'
           cache: maven
+      - name: build and install aya
+        working-directory: aya
+        run: mvn install --batch-mode
       - name: Run install phase
+        working-directory: main
         run: mvn install --batch-mode
       - name: Publish the artifact
         uses: actions/upload-artifact@v4
         with:
           name: xml.aya.zip
-          path: target/xml.aya*.zip
+          path: main/target/xml.aya*.zip
