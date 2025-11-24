@@ -52,6 +52,16 @@
         <var name="error.log.str" unset="true"/>
         <trycatch>
             <try>
+                <if>
+                    <os family="dos"/>
+                    <then>
+                        <property name="aya.expr" value='import pkg \"xml.aya\" pkg.test'/>
+                    </then>
+                    <else>
+                        <property name="aya.expr" value='import pkg "xml.aya" pkg.test'/>
+                    </else>
+                </if>
+
                 <java
                         fork="true"
                         dir="${test.dir}"
@@ -64,7 +74,7 @@
                     <jvmarg value="-Duser.country=US"/>
                     <arg value="${test.dir}"/>
                     <arg value="-e"/>
-                    <arg value='import pkg ""xml.aya"" pkg.test'/>
+                    <arg value="${aya.expr}"/>
                 </java>
                 <!-- if the test did not fail, repeat the error logs to the console -->
                 <echo level="error" message="${error.log.str}"/>
